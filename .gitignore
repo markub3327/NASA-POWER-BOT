@@ -1,1 +1,8 @@
+# macOS
 .DS_Store
+
+# Dataset
+dataset/
+
+# Python
+__pycache__/
