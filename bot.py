@@ -142,10 +142,6 @@ for year in range(args.year_start, args.year_end + 1):
 print(f"Inputs shape: {X_all.shape}")
 print(f"Target shape: {y_all.shape}")
 
-# replace bad values with fill value 0 !!!
-X_all[X_all < 0] = 0
-y_all[y_all < 0] = 0
-
 # Descriptive Statistics
 print(f"Minimum: {np.min(X_all)}")
 print(f"Maximum: {np.max(X_all)}")
