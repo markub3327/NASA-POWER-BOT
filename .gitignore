@@ -4,5 +4,8 @@
 # Dataset
 dataset/
 
-# Python
-__pycache__/
+# Third-party libraries
+nlohmann/
+
+# Binaries
+bin/
