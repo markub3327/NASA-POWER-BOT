@@ -163,8 +163,7 @@ print(f"Mean: {np.mean(y_all)}")
 print(f"Standard deviation: {np.std(y_all)}\n")
 
 # save dataset
-np.save("dataset/X_all", X_all)
-np.save("dataset/y_all", y_all)
+np.savez_compressed("dataset", X=X_all, y=y_all)
 
 # inputs distribution
 sns.displot(X_all.reshape((-1, X_all.shape[-1])), kde=True)
