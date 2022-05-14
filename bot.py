@@ -133,7 +133,7 @@ for year in range(args.year_start, args.year_end + 1):
 
             features_point = content["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
             y = list(features_point.values())
-            y_all[t : t + len(x), p, 0] = x
+            y_all[t : t + len(x), p, 0] = y
         else:
             raise ValueError(
                 f"Cannot download point dataset with status code {response_target.status_code} 😟\n"
