@@ -143,6 +143,10 @@ for year in range(args.year_start, args.year_end + 1):
 
     t += days_per_year
 
+# replace bad values with fill value -1 !!!
+X_all[X_all < 0] = -1
+y_all[y_all < 0] = -1
+
 print(f"Inputs shape: {X_all.shape}")
 print(f"Target shape: {y_all.shape}")
 
