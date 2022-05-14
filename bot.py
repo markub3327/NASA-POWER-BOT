@@ -99,6 +99,8 @@ for year in range(args.year_start, args.year_end + 1):
             fill_value = content["header"][
                 "fill_value"
             ]  # represents missing values (measurement error)
+            print(f"{name} ({units})")
+            print(f"Fill value: {fill_value}", "\n")
 
             for f in range(F):
                 features_region = content["features"][f]["properties"]["parameter"][
@@ -126,6 +128,8 @@ for year in range(args.year_start, args.year_end + 1):
             fill_value = content["header"][
                 "fill_value"
             ]  # represents missing values (measurement error)
+            print(f"{name} ({units})")
+            print(f"Fill value: {fill_value}", "\n")
 
             features_point = content["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
             y = list(features_point.values())
