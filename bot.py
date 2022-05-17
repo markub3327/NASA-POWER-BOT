@@ -168,12 +168,14 @@ for year in range(args.year_start, args.year_end + 1):
                 )
         else:
             y_hourly_all[t_hourly : t_hourly + (days_per_year * 24), p, 0] = -1
-            print(f"Year {year} is too early for hourly data. Filled with missing value -1.\n")
+            print(
+                f"Year {year} is too early for hourly data. Filled with missing value -1.\n"
+            )
 
     print("Dataset downloaded 🙂\n")
 
     t_daily += days_per_year
-    t_hourly += (days_per_year * 24)
+    t_hourly += days_per_year * 24
 
 print(t_daily, " ", t_hourly)
 
