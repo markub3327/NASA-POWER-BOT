@@ -1,8 +1,11 @@
-{
-"target_locations": {
+---
+
+target_locations: {
+    # Original paper
     "Target 1": [23.25991, 77.41261],
     "Target 2": [22.71961, 75.85771],
 
+    # Solar parks in India
     "Bhadla Solar Park": [27.539669, 71.915253],
     "Pavagada Solar Park": [14.251944, 77.447500],
     "Kurnool Ultra Mega Solar Park": [15.681522, 78.283749],
@@ -21,6 +24,7 @@
     "Mithapur Solar Power Plant": [22.409125, 68.993183],
     "Telangana II Solar Power Plant": [16.152778, 77.765556],
 
+    # Buildings with solar panels
     "Ctrls Data Center Mumbai": [19.063336, 72.861819],
     "HUDA City Centre metro station": [28.459167, 77.072500],
     "PUNE RAILWAY STATION": [18.528821, 73.87315],
@@ -28,4 +32,5 @@
     "Dell India": [12.978386, 77.665749],
     "Chennai Metropolitan Area": [13.083667, 80.268667]
 }
-}
+
+...
