@@ -207,7 +207,7 @@ print(f"Mean: {np.mean(y_hourly_all)}")
 print(f"Standard deviation: {np.std(y_hourly_all)}\n")
 
 # save dataset
-np.savez_compressed("dataset", X=X_all, y_daily=y_daily_all, y_hourly=y_hourly_all)
+np.savez_compressed("dataset/dataset.npz", X=X_all, y_daily=y_daily_all, y_hourly=y_hourly_all)
 
 # inputs distribution
 sns.displot(X_all.reshape((-1, X_all.shape[-1])), kde=True)
