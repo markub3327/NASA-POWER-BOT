@@ -3,8 +3,8 @@ from datetime import timezone
 from datetime import timedelta
 from utils import num_of_leap_years_in_range, get_area
 
-import seaborn as sns
-import matplotlib.pyplot as plt
+# import seaborn as sns
+# import matplotlib.pyplot as plt
 import numpy as np
 import requests
 import argparse
@@ -46,7 +46,7 @@ my_parser.add_argument(
     "-orbit",
     type=float,
     help="Tropical orbit period (days)",
-    default=365.242,    # https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html, https://nssdc.gsfc.nasa.gov/planetary/factsheet/planetfact_notes.html
+    default=365.242,  # https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html, https://nssdc.gsfc.nasa.gov/planetary/factsheet/planetfact_notes.html
 )
 my_parser.add_argument(
     "-t",
@@ -95,7 +95,9 @@ for year in range(args.year_start, args.year_end + 1):
         print(f"Year: {year}")
         print("⛅ 🌞 ⚡")
         print("----------------------------------------------------------")
-        print(f"Target: {target_locations[location_key][0]}, {target_locations[location_key][1]}")
+        print(
+            f"Target: {target_locations[location_key][0]}, {target_locations[location_key][1]}"
+        )
         print(f"Area: {latitude_min}, {latitude_max}, {longitude_min}, {longitude_max}")
         print("----------------------------------------------------------\n")
 
@@ -124,14 +126,18 @@ for year in range(args.year_start, args.year_end + 1):
                 for t2, time_key in enumerate(features_region):
                     date = datetime.strptime(time_key, "%Y%m%d")
                     timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-                    X_all[t_daily + t2, p, f] = features_region[time_key]                   # Irradiance
+                    X_all[t_daily + t2, p, f] = features_region[time_key]  # Irradiance
 
             date = datetime(year=year, month=1, day=1, hour=0, minute=0, second=0)
             for t2 in range(days_per_year):
                 timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-                X_all[t_daily + t2, p, -2] = np.sin(timestamp * (2 * np.pi / y))       # Year sin
-                X_all[t_daily + t2, p, -1] = np.cos(timestamp * (2 * np.pi / y))       # Year cos
-                date += timedelta(days = 1)
+                X_all[t_daily + t2, p, -2] = np.sin(
+                    timestamp * (2 * np.pi / y)
+                )  # Year sin
+                X_all[t_daily + t2, p, -1] = np.cos(
+                    timestamp * (2 * np.pi / y)
+                )  # Year cos
+                date += timedelta(days=1)
 
         else:
             raise ValueError(
@@ -160,9 +166,13 @@ for year in range(args.year_start, args.year_end + 1):
             for t2, time_key in enumerate(features_point):
                 date = datetime.strptime(time_key, "%Y%m%d")
                 timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-                y_daily_all[t_daily + t2, p, 0] = features_point[time_key]                  # Irradiance
-                y_daily_all[t_daily + t2, p, 1] = np.sin(timestamp * (2 * np.pi / y))       # Year sin
-                y_daily_all[t_daily + t2, p, 2] = np.cos(timestamp * (2 * np.pi / y))       # Year cos
+                y_daily_all[t_daily + t2, p, 0] = features_point[time_key]  # Irradiance
+                y_daily_all[t_daily + t2, p, 1] = np.sin(
+                    timestamp * (2 * np.pi / y)
+                )  # Year sin
+                y_daily_all[t_daily + t2, p, 2] = np.cos(
+                    timestamp * (2 * np.pi / y)
+                )  # Year cos
         else:
             raise ValueError(
                 f"Cannot download point dataset with status code {response_target.status_code} 😟\n"
@@ -192,11 +202,21 @@ for year in range(args.year_start, args.year_end + 1):
                     date = datetime.strptime(time_key, "%Y%m%d%H")
                     timestamp = date.replace(tzinfo=timezone.utc).timestamp()
 
-                    y_hourly_all[t_hourly + t2, p, 0] = features_point[time_key]                  # Irradiance
-                    y_hourly_all[t_hourly + t2, p, 1] = np.sin(timestamp * (2 * np.pi / y))       # Year sin
-                    y_hourly_all[t_hourly + t2, p, 2] = np.cos(timestamp * (2 * np.pi / y))       # Year cos
-                    y_hourly_all[t_hourly + t2, p, 3] = np.sin(timestamp * (2 * np.pi / d))       # Day sin 
-                    y_hourly_all[t_hourly + t2, p, 4] = np.cos(timestamp * (2 * np.pi / d))       # Day cos
+                    y_hourly_all[t_hourly + t2, p, 0] = features_point[
+                        time_key
+                    ]  # Irradiance
+                    y_hourly_all[t_hourly + t2, p, 1] = np.sin(
+                        timestamp * (2 * np.pi / y)
+                    )  # Year sin
+                    y_hourly_all[t_hourly + t2, p, 2] = np.cos(
+                        timestamp * (2 * np.pi / y)
+                    )  # Year cos
+                    y_hourly_all[t_hourly + t2, p, 3] = np.sin(
+                        timestamp * (2 * np.pi / d)
+                    )  # Day sin
+                    y_hourly_all[t_hourly + t2, p, 4] = np.cos(
+                        timestamp * (2 * np.pi / d)
+                    )  # Day cos
             else:
                 raise ValueError(
                     f"Cannot download point dataset with status code {response_target.status_code} 😟\n"
@@ -205,12 +225,20 @@ for year in range(args.year_start, args.year_end + 1):
             date = datetime(year=year, month=1, day=1, hour=0, minute=0, second=0)
             for t2 in range(days_per_year * 24):
                 timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-                y_hourly_all[t_hourly + t2, p, 0] = -1                                        # Irradiance
-                y_hourly_all[t_hourly + t2, p, 1] = np.sin(timestamp * (2 * np.pi / y))       # Year sin
-                y_hourly_all[t_hourly + t2, p, 2] = np.cos(timestamp * (2 * np.pi / y))       # Year cos
-                y_hourly_all[t_hourly + t2, p, 3] = np.sin(timestamp * (2 * np.pi / d))       # Day sin 
-                y_hourly_all[t_hourly + t2, p, 4] = np.cos(timestamp * (2 * np.pi / d))       # Day cos
-                date += timedelta(hours = 1)
+                y_hourly_all[t_hourly + t2, p, 0] = -1  # Irradiance
+                y_hourly_all[t_hourly + t2, p, 1] = np.sin(
+                    timestamp * (2 * np.pi / y)
+                )  # Year sin
+                y_hourly_all[t_hourly + t2, p, 2] = np.cos(
+                    timestamp * (2 * np.pi / y)
+                )  # Year cos
+                y_hourly_all[t_hourly + t2, p, 3] = np.sin(
+                    timestamp * (2 * np.pi / d)
+                )  # Day sin
+                y_hourly_all[t_hourly + t2, p, 4] = np.cos(
+                    timestamp * (2 * np.pi / d)
+                )  # Day cos
+                date += timedelta(hours=1)
             print(
                 f"Year {year} is too early for hourly data. Filled with missing value -1.\n"
             )
@@ -255,15 +283,15 @@ np.savez_compressed(
 )
 
 # inputs distribution
-#sns.displot(X_all.reshape((-1, X_all.shape[-1])), kde=True)
-#plt.title("Region")
+# sns.displot(X_all.reshape((-1, X_all.shape[-1])), kde=True)
+# plt.title("Region")
 
 # target distribution
-#sns.displot(y_daily_all.reshape((-1, y_daily_all.shape[-1])), kde=True)
-#plt.title("Point - daily")
+# sns.displot(y_daily_all.reshape((-1, y_daily_all.shape[-1])), kde=True)
+# plt.title("Point - daily")
 
 # target distribution
-#sns.displot(y_hourly_all.reshape((-1, y_hourly_all.shape[-1])), kde=True)
-#plt.title("Point - hourly")
+# sns.displot(y_hourly_all.reshape((-1, y_hourly_all.shape[-1])), kde=True)
+# plt.title("Point - hourly")
 
-#plt.show()
+# plt.show()
