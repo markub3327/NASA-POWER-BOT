@@ -255,15 +255,15 @@ np.savez_compressed(
 )
 
 # inputs distribution
-sns.displot(X_all.reshape((-1, X_all.shape[-1])), kde=True)
-plt.title("Region")
+#sns.displot(X_all.reshape((-1, X_all.shape[-1])), kde=True)
+#plt.title("Region")
 
 # target distribution
-sns.displot(y_daily_all.reshape((-1, y_daily_all.shape[-1])), kde=True)
-plt.title("Point - daily")
+#sns.displot(y_daily_all.reshape((-1, y_daily_all.shape[-1])), kde=True)
+#plt.title("Point - daily")
 
 # target distribution
-sns.displot(y_hourly_all.reshape((-1, y_hourly_all.shape[-1])), kde=True)
-plt.title("Point - hourly")
+#sns.displot(y_hourly_all.reshape((-1, y_hourly_all.shape[-1])), kde=True)
+#plt.title("Point - hourly")
 
-plt.show()
+#plt.show()
