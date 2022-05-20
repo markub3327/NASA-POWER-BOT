@@ -126,7 +126,14 @@ for year in range(args.year_start, args.year_end + 1):
                 for t2, time_key in enumerate(features_region):
                     date = datetime.strptime(time_key, "%Y%m%d")
                     timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-                    X_all[t_daily + t2, p, f] = features_region[time_key]  # Irradiance
+
+                    # replace bad values with fill value -1 !!!
+                    if features_region[time_key] != fill_value:
+                        X_all[t_daily + t2, p, f] = features_region[
+                            time_key
+                        ]  # Irradiance
+                    else:
+                        X_all[t_daily + t2, p, f] = -1
 
             date = datetime(year=year, month=1, day=1, hour=0, minute=0, second=0)
             for t2 in range(days_per_year):
@@ -166,7 +173,15 @@ for year in range(args.year_start, args.year_end + 1):
             for t2, time_key in enumerate(features_point):
                 date = datetime.strptime(time_key, "%Y%m%d")
                 timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-                y_daily_all[t_daily + t2, p, 0] = features_point[time_key]  # Irradiance
+
+                # replace bad values with fill value -1 !!!
+                if features_point[time_key] != fill_value:
+                    y_daily_all[t_daily + t2, p, 0] = features_point[
+                        time_key
+                    ]  # Irradiance
+                else:
+                    y_daily_all[t_daily + t2, p, 0] = -1
+
                 y_daily_all[t_daily + t2, p, 1] = np.sin(
                     timestamp * (2 * np.pi / y)
                 )  # Year sin
@@ -202,9 +217,14 @@ for year in range(args.year_start, args.year_end + 1):
                     date = datetime.strptime(time_key, "%Y%m%d%H")
                     timestamp = date.replace(tzinfo=timezone.utc).timestamp()
 
-                    y_hourly_all[t_hourly + t2, p, 0] = features_point[
-                        time_key
-                    ]  # Irradiance
+                    # replace bad values with fill value -1 !!!
+                    if features_point[time_key] != fill_value:
+                        y_hourly_all[t_daily + t2, p, 0] = features_point[
+                            time_key
+                        ]  # Irradiance
+                    else:
+                        y_hourly_all[t_daily + t2, p, 0] = -1
+
                     y_hourly_all[t_hourly + t2, p, 1] = np.sin(
                         timestamp * (2 * np.pi / y)
                     )  # Year sin
@@ -249,11 +269,6 @@ for year in range(args.year_start, args.year_end + 1):
     t_hourly += days_per_year * 24
 
 print(t_daily, " ", t_hourly)
-
-# replace bad values with fill value -1 !!!
-X_all[X_all < 0] = -1
-y_daily_all[y_daily_all < 0] = -1
-y_hourly_all[y_hourly_all < 0] = -1
 
 print(f"Inputs shape: {X_all.shape}")
 print(f"Target daily shape: {y_daily_all.shape}")
