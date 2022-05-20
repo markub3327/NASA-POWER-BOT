@@ -228,12 +228,12 @@ for year in range(args.year_start, args.year_end + 1):
                     y_hourly_all[t_hourly + t2, p, 1] = np.sin(
                         timestamp * (2 * np.pi / y)
                     )  # Year sin
-                    y_hourly_all[t_hourly + t2, p, 2] = np.cos(
-                        timestamp * (2 * np.pi / y)
-                    )  # Year cos
-                    y_hourly_all[t_hourly + t2, p, 3] = np.sin(
+                    y_hourly_all[t_hourly + t2, p, 2] = np.sin(
                         timestamp * (2 * np.pi / d)
                     )  # Day sin
+                    y_hourly_all[t_hourly + t2, p, 3] = np.cos(
+                        timestamp * (2 * np.pi / y)
+                    )  # Year cos
                     y_hourly_all[t_hourly + t2, p, 4] = np.cos(
                         timestamp * (2 * np.pi / d)
                     )  # Day cos
@@ -249,12 +249,12 @@ for year in range(args.year_start, args.year_end + 1):
                 y_hourly_all[t_hourly + t2, p, 1] = np.sin(
                     timestamp * (2 * np.pi / y)
                 )  # Year sin
-                y_hourly_all[t_hourly + t2, p, 2] = np.cos(
-                    timestamp * (2 * np.pi / y)
-                )  # Year cos
-                y_hourly_all[t_hourly + t2, p, 3] = np.sin(
+                y_hourly_all[t_hourly + t2, p, 2] = np.sin(
                     timestamp * (2 * np.pi / d)
                 )  # Day sin
+                y_hourly_all[t_hourly + t2, p, 3] = np.cos(
+                    timestamp * (2 * np.pi / y)
+                )  # Year cos
                 y_hourly_all[t_hourly + t2, p, 4] = np.cos(
                     timestamp * (2 * np.pi / d)
                 )  # Day cos
