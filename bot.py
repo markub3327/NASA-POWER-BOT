@@ -53,7 +53,7 @@ my_parser.add_argument(
     "--timeout",
     type=int,
     help="Timeout",
-    default=60,
+    default=300,  # 5 minutes
 )
 args = my_parser.parse_args()
 
