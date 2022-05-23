@@ -1,14 +1,13 @@
-from datetime import datetime
-from datetime import timezone
-from datetime import timedelta
-from utils import num_of_leap_years_in_range, is_leap_year, get_area
+import argparse
+from datetime import datetime, timedelta, timezone
 
 # import seaborn as sns
 # import matplotlib.pyplot as plt
 import numpy as np
 import requests
-import argparse
 import yaml
+
+from utils import get_area, is_leap_year, num_of_leap_years_in_range
 
 my_parser = argparse.ArgumentParser(
     prog="python3 download.py",
@@ -67,11 +66,15 @@ days_per_non_leap_year = 365
 days_per_leap_year = 366
 
 leap_years = num_of_leap_years_in_range(start=args.year_start, end=args.year_end)
-T =  ((leap_years * days_per_leap_year) + \
-     (((args.year_end - args.year_start + 1) - leap_years) * days_per_non_leap_year))
+T = (leap_years * days_per_leap_year) + (
+    ((args.year_end - args.year_start + 1) - leap_years) * days_per_non_leap_year
+)
 
 if args.year_end == datetime.utcnow().year:
-    T -= (datetime(year=args.year_end, month=12, day=31, hour=23, minute=0, second=0) - datetime.utcnow()).days
+    T -= (
+        datetime(year=args.year_end, month=12, day=31, hour=23, minute=0, second=0)
+        - datetime.utcnow()
+    ).days
 P = len(target_locations)
 F = int(
     args.area_width * 2 * args.area_height * 2
@@ -83,17 +86,20 @@ y_daily_all = np.zeros((T, P, 1 + 2), dtype=np.float32)
 # Timesteps
 t_daily, t_hourly = 0, 0
 for year in range(args.year_start, args.year_end + 1):
-    if is_leap_year(year): 
+    if is_leap_year(year):
         days_per_year = days_per_leap_year
     else:
         days_per_year = days_per_non_leap_year
-    
+
     # full year (366/365 days)
     y = days_per_year * d
 
     # real num. of days in year
     if year == datetime.utcnow().year:
-        days_per_year -= (datetime(year=args.year_end, month=12, day=31, hour=23, minute=0, second=0) - datetime.utcnow()).days
+        days_per_year -= (
+            datetime(year=args.year_end, month=12, day=31, hour=23, minute=0, second=0)
+            - datetime.utcnow()
+        ).days
 
     # Patches
     for p, location_key in enumerate(target_locations):
@@ -116,7 +122,11 @@ for year in range(args.year_start, args.year_end + 1):
 
         # Region - daily
         response_region = requests.get(
-            f"https://power.larc.nasa.gov/api/temporal/daily/regional?start={year}0101&end={year}1231&latitude-min={latitude_min}&latitude-max={latitude_max}&longitude-min={longitude_min}&longitude-max={longitude_max}&community=re&parameters=ALLSKY_SFC_SW_DWN&format=json&header=true&time-standard=utc",
+            "https://power.larc.nasa.gov/api/temporal/daily/regional?"
+            f"start={year}0101&end={year}1231&"
+            f"latitude-min={latitude_min}&latitude-max={latitude_max}&longitude-min={longitude_min}&longitude-max={longitude_max}&"
+            "community=re&parameters=ALLSKY_SFC_SW_DWN&time-standard=utc&"
+            "format=json&header=true",
             verify=True,
             timeout=args.timeout,
         )
@@ -158,7 +168,7 @@ for year in range(args.year_start, args.year_end + 1):
                     timestamp * (2 * np.pi / y)
                 )  # Year cos
                 date += timedelta(days=1)
-            
+
         else:
             raise ValueError(
                 f"Cannot download region dataset with status code {response_region.status_code} 😟"
@@ -166,7 +176,11 @@ for year in range(args.year_start, args.year_end + 1):
 
         # Point - daily
         response_target = requests.get(
-            f"https://power.larc.nasa.gov/api/temporal/daily/point?start={year}0101&end={year}1231&latitude={target_locations[location_key][0]}&longitude={target_locations[location_key][1]}&community=re&parameters=ALLSKY_SFC_SW_DWN&format=json&header=true&time-standard=utc",
+            "https://power.larc.nasa.gov/api/temporal/daily/point?"
+            f"start={year}0101&end={year}1231&"
+            f"latitude={target_locations[location_key][0]}&longitude={target_locations[location_key][1]}&"
+            "community=re&parameters=ALLSKY_SFC_SW_DWN&time-standard=utc&"
+            "format=json&header=true",
             verify=True,
             timeout=args.timeout,
         )
@@ -189,9 +203,7 @@ for year in range(args.year_start, args.year_end + 1):
 
                 # replace bad values with fill value -1 !!!
                 if features_point[time_key] != fill_value:
-                    y_daily_all[t_daily + t2, p, 0] = features_point[
-                        time_key
-                    ]
+                    y_daily_all[t_daily + t2, p, 0] = features_point[time_key]
                 else:
                     y_daily_all[t_daily + t2, p, 0] = -1
 
@@ -209,7 +221,11 @@ for year in range(args.year_start, args.year_end + 1):
         # Point - hourly
         if year >= 2001:
             response_target = requests.get(
-                f"https://power.larc.nasa.gov/api/temporal/hourly/point?start={year}0101&end={year}1231&latitude={target_locations[location_key][0]}&longitude={target_locations[location_key][1]}&community=re&parameters=ALLSKY_SFC_SW_DWN&format=json&header=true&time-standard=utc",
+                "https://power.larc.nasa.gov/api/temporal/hourly/point?"
+                f"start={year}0101&end={year}1231&"
+                f"latitude={target_locations[location_key][0]}&longitude={target_locations[location_key][1]}&"
+                "community=re&parameters=ALLSKY_SFC_SW_DWN&time-standard=utc&"
+                "format=json&header=true",
                 verify=True,
                 timeout=args.timeout,
             )
@@ -229,12 +245,12 @@ for year in range(args.year_start, args.year_end + 1):
                 for t2, time_key in enumerate(features_point):
                     date = datetime.strptime(time_key, "%Y%m%d%H")
                     timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-                    
+
                     # replace bad values with fill value -1 !!!
                     if features_point[time_key] != fill_value:
-                        y_hourly_all[t_daily + t2, p, 0] = features_point[
-                            time_key
-                        ] / 1000
+                        y_hourly_all[t_daily + t2, p, 0] = (
+                            features_point[time_key] / 1000
+                        )
                     else:
                         y_hourly_all[t_daily + t2, p, 0] = -1
 

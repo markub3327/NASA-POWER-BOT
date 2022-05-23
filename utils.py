@@ -1,12 +1,15 @@
 def num_of_leap_years(year):
     return (year // 4) - (year // 100) + (year // 400)
 
+
 def is_leap_year(year):
     return (year % 4 == 0 and year % 100 != 0) or year % 400 == 0
+
 
 def num_of_leap_years_in_range(start, end):
     start -= 1
     return num_of_leap_years(end) - num_of_leap_years(start)
+
 
 def get_area(loc, width, height):
     offset_x = width / 2
