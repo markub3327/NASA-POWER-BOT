@@ -84,7 +84,7 @@ y_hourly_all = np.zeros(((T * 24), P, 1 + 4), dtype=np.float32)
 y_daily_all = np.zeros((T, P, 1 + 2), dtype=np.float32)
 
 # Timesteps
-t_daily, t_hourly = 0, 0
+t_daily, t_hourly, days_per_year = 0, 0, 0
 for year in range(args.year_start, args.year_end + 1):
     if is_leap_year(year):
         days_per_year = days_per_leap_year
@@ -248,11 +248,11 @@ for year in range(args.year_start, args.year_end + 1):
 
                     # replace bad values with fill value -1 !!!
                     if features_point[time_key] != fill_value:
-                        y_hourly_all[t_daily + t2, p, 0] = (
+                        y_hourly_all[t_hourly + t2, p, 0] = (
                             features_point[time_key] / 1000
                         )
                     else:
-                        y_hourly_all[t_daily + t2, p, 0] = -1
+                        y_hourly_all[t_hourly + t2, p, 0] = -1
 
                     y_hourly_all[t_hourly + t2, p, 1] = np.sin(
                         timestamp * (2 * np.pi / y)
