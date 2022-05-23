@@ -1,7 +1,7 @@
 from datetime import datetime
 from datetime import timezone
 from datetime import timedelta
-from utils import num_of_leap_years_in_range, get_area
+from utils import num_of_leap_years_in_range, is_leap_year, get_area
 
 # import seaborn as sns
 # import matplotlib.pyplot as plt
@@ -43,12 +43,6 @@ my_parser.add_argument(
     required=True,
 )
 my_parser.add_argument(
-    "-orbit",
-    type=float,
-    help="Tropical orbit period (days)",
-    default=365.242,  # https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html, https://nssdc.gsfc.nasa.gov/planetary/factsheet/planetfact_notes.html
-)
-my_parser.add_argument(
     "-t",
     "--timeout",
     type=int,
@@ -57,20 +51,27 @@ my_parser.add_argument(
 )
 args = my_parser.parse_args()
 
+# year end
+if args.year_end > datetime.utcnow().year:
+    print("Error: year end is greater than current year")
+    exit(1)
+
 # constants
 d = 24 * 60 * 60
-y = args.orbit * d
-
-if num_of_leap_years_in_range(start=args.year_start, end=args.year_end) > 0:
-    days_per_year = 366
-else:
-    days_per_year = 365
 
 with open("locations.yml", "r") as file:
     content = yaml.safe_load(file)
     target_locations = content["target_locations"]
 
-T = days_per_year * (args.year_end - args.year_start + 1)
+days_per_non_leap_year = 365
+days_per_leap_year = 366
+
+leap_years = num_of_leap_years_in_range(start=args.year_start, end=args.year_end)
+T =  ((leap_years * days_per_leap_year) + \
+     (((args.year_end - args.year_start + 1) - leap_years) * days_per_non_leap_year))
+
+if args.year_end == datetime.utcnow().year:
+    T -= (datetime(year=args.year_end, month=12, day=31, hour=23, minute=0, second=0) - datetime.utcnow()).days
 P = len(target_locations)
 F = int(
     args.area_width * 2 * args.area_height * 2
@@ -82,6 +83,17 @@ y_daily_all = np.zeros((T, P, 1 + 2), dtype=np.float32)
 # Timesteps
 t_daily, t_hourly = 0, 0
 for year in range(args.year_start, args.year_end + 1):
+    if is_leap_year(year): 
+        days_per_year = days_per_leap_year
+    else:
+        days_per_year = days_per_non_leap_year
+    
+    # full year (366/365 days)
+    y = days_per_year * d
+
+    # real num. of days in year
+    if year == datetime.utcnow().year:
+        days_per_year -= (datetime(year=args.year_end, month=12, day=31, hour=23, minute=0, second=0) - datetime.utcnow()).days
 
     # Patches
     for p, location_key in enumerate(target_locations):
@@ -93,6 +105,7 @@ for year in range(args.year_start, args.year_end + 1):
 
         print(f"{location_key}")
         print(f"Year: {year}")
+        print(f"Days per year: {days_per_year}")
         print("⛅ 🌞 ⚡")
         print("----------------------------------------------------------")
         print(
@@ -145,7 +158,7 @@ for year in range(args.year_start, args.year_end + 1):
                     timestamp * (2 * np.pi / y)
                 )  # Year cos
                 date += timedelta(days=1)
-
+            
         else:
             raise ValueError(
                 f"Cannot download region dataset with status code {response_region.status_code} 😟"
@@ -178,7 +191,7 @@ for year in range(args.year_start, args.year_end + 1):
                 if features_point[time_key] != fill_value:
                     y_daily_all[t_daily + t2, p, 0] = features_point[
                         time_key
-                    ]  # Irradiance
+                    ]
                 else:
                     y_daily_all[t_daily + t2, p, 0] = -1
 
@@ -209,19 +222,19 @@ for year in range(args.year_start, args.year_end + 1):
                 fill_value = content["header"][
                     "fill_value"
                 ]  # represents missing values (measurement error)
-                print(f"{name} ({units})")
+                print(f"{name} (k{units})")
                 print(f"Fill value: {fill_value}", "\n")
 
                 features_point = content["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
                 for t2, time_key in enumerate(features_point):
                     date = datetime.strptime(time_key, "%Y%m%d%H")
                     timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-
+                    
                     # replace bad values with fill value -1 !!!
                     if features_point[time_key] != fill_value:
                         y_hourly_all[t_daily + t2, p, 0] = features_point[
                             time_key
-                        ]  # Irradiance
+                        ] / 1000
                     else:
                         y_hourly_all[t_daily + t2, p, 0] = -1
 
