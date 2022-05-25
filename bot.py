@@ -56,18 +56,18 @@ if args.year_end > datetime.utcnow().year:
     exit(1)
 
 # constants
-d = 24 * 60 * 60
+DAY = 24 * 60 * 60
 
-with open("locations.yml", "r") as file:
+with open("locations.yml", "r", encoding="utf8") as file:
     content = yaml.safe_load(file)
     target_locations = content["target_locations"]
 
-days_per_non_leap_year = 365
-days_per_leap_year = 366
+DAYS_PER_NON_LEAP_YEAR = 365
+DAYS_PER_LEAP_YEAR = 366
 
 leap_years = num_of_leap_years_in_range(start=args.year_start, end=args.year_end)
-T = (leap_years * days_per_leap_year) + (
-    ((args.year_end - args.year_start + 1) - leap_years) * days_per_non_leap_year
+T = (leap_years * DAYS_PER_LEAP_YEAR) + (
+    ((args.year_end - args.year_start + 1) - leap_years) * DAYS_PER_NON_LEAP_YEAR
 )
 
 if args.year_end == datetime.utcnow().year:
@@ -84,19 +84,19 @@ y_hourly_all = np.zeros(((T * 24), P, 1 + 4), dtype=np.float32)
 y_daily_all = np.zeros((T, P, 1 + 2), dtype=np.float32)
 
 # Timesteps
-t_daily, t_hourly, days_per_year = 0, 0, 0
+t_daily, t_hourly = 0, 0
 for year in range(args.year_start, args.year_end + 1):
     if is_leap_year(year):
-        days_per_year = days_per_leap_year
+        DAYS_PER_YEAR = DAYS_PER_LEAP_YEAR
     else:
-        days_per_year = days_per_non_leap_year
+        DAYS_PER_YEAR = DAYS_PER_NON_LEAP_YEAR
 
     # full year (366/365 days)
-    y = days_per_year * d
+    YEAR = DAYS_PER_YEAR * DAY
 
     # real num. of days in year
     if year == datetime.utcnow().year:
-        days_per_year -= (
+        DAYS_PER_YEAR -= (
             datetime(year=args.year_end, month=12, day=31, hour=23, minute=0, second=0)
             - datetime.utcnow()
         ).days
@@ -111,7 +111,7 @@ for year in range(args.year_start, args.year_end + 1):
 
         print(f"{location_key}")
         print(f"Year: {year}")
-        print(f"Days per year: {days_per_year}")
+        print(f"Days per year: {DAYS_PER_YEAR}")
         print("⛅ 🌞 ⚡")
         print("----------------------------------------------------------")
         print(
@@ -149,23 +149,16 @@ for year in range(args.year_start, args.year_end + 1):
                 for t2, time_key in enumerate(features_region):
                     date = datetime.strptime(time_key, "%Y%m%d")
                     timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-
-                    # replace bad values with fill value -1 !!!
-                    if features_region[time_key] != fill_value:
-                        X_all[t_daily + t2, p, f] = features_region[
-                            time_key
-                        ]  # Irradiance
-                    else:
-                        X_all[t_daily + t2, p, f] = -1
+                    X_all[t_daily + t2, p, f] = features_region[time_key]  # Irradiance
 
             date = datetime(year=year, month=1, day=1, hour=0, minute=0, second=0)
-            for t2 in range(days_per_year):
+            for t2 in range(DAYS_PER_YEAR):
                 timestamp = date.replace(tzinfo=timezone.utc).timestamp()
                 X_all[t_daily + t2, p, -2] = np.sin(
-                    timestamp * (2 * np.pi / y)
+                    timestamp * (2 * np.pi / YEAR)
                 )  # Year sin
                 X_all[t_daily + t2, p, -1] = np.cos(
-                    timestamp * (2 * np.pi / y)
+                    timestamp * (2 * np.pi / YEAR)
                 )  # Year cos
                 date += timedelta(days=1)
 
@@ -200,18 +193,12 @@ for year in range(args.year_start, args.year_end + 1):
             for t2, time_key in enumerate(features_point):
                 date = datetime.strptime(time_key, "%Y%m%d")
                 timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-
-                # replace bad values with fill value -1 !!!
-                if features_point[time_key] != fill_value:
-                    y_daily_all[t_daily + t2, p, 0] = features_point[time_key]
-                else:
-                    y_daily_all[t_daily + t2, p, 0] = -1
-
+                y_daily_all[t_daily + t2, p, 0] = features_point[time_key]
                 y_daily_all[t_daily + t2, p, 1] = np.sin(
-                    timestamp * (2 * np.pi / y)
+                    timestamp * (2 * np.pi / YEAR)
                 )  # Year sin
                 y_daily_all[t_daily + t2, p, 2] = np.cos(
-                    timestamp * (2 * np.pi / y)
+                    timestamp * (2 * np.pi / YEAR)
                 )  # Year cos
         else:
             raise ValueError(
@@ -238,33 +225,25 @@ for year in range(args.year_start, args.year_end + 1):
                 fill_value = content["header"][
                     "fill_value"
                 ]  # represents missing values (measurement error)
-                print(f"{name} (k{units})")
+                print(f"{name} ({units})")
                 print(f"Fill value: {fill_value}", "\n")
 
                 features_point = content["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
                 for t2, time_key in enumerate(features_point):
                     date = datetime.strptime(time_key, "%Y%m%d%H")
                     timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-
-                    # replace bad values with fill value -1 !!!
-                    if features_point[time_key] != fill_value:
-                        y_hourly_all[t_hourly + t2, p, 0] = (
-                            features_point[time_key] / 1000
-                        )
-                    else:
-                        y_hourly_all[t_hourly + t2, p, 0] = -1
-
+                    y_hourly_all[t_hourly + t2, p, 0] = features_point[time_key]
                     y_hourly_all[t_hourly + t2, p, 1] = np.sin(
-                        timestamp * (2 * np.pi / y)
+                        timestamp * (2 * np.pi / YEAR)
                     )  # Year sin
                     y_hourly_all[t_hourly + t2, p, 2] = np.sin(
-                        timestamp * (2 * np.pi / d)
+                        timestamp * (2 * np.pi / DAY)
                     )  # Day sin
                     y_hourly_all[t_hourly + t2, p, 3] = np.cos(
-                        timestamp * (2 * np.pi / y)
+                        timestamp * (2 * np.pi / YEAR)
                     )  # Year cos
                     y_hourly_all[t_hourly + t2, p, 4] = np.cos(
-                        timestamp * (2 * np.pi / d)
+                        timestamp * (2 * np.pi / DAY)
                     )  # Day cos
             else:
                 raise ValueError(
@@ -272,30 +251,30 @@ for year in range(args.year_start, args.year_end + 1):
                 )
         else:
             date = datetime(year=year, month=1, day=1, hour=0, minute=0, second=0)
-            for t2 in range(days_per_year * 24):
+            for t2 in range(DAYS_PER_YEAR * 24):
                 timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-                y_hourly_all[t_hourly + t2, p, 0] = -1  # Irradiance
+                y_hourly_all[t_hourly + t2, p, 0] = fill_value  # Irradiance
                 y_hourly_all[t_hourly + t2, p, 1] = np.sin(
-                    timestamp * (2 * np.pi / y)
+                    timestamp * (2 * np.pi / YEAR)
                 )  # Year sin
                 y_hourly_all[t_hourly + t2, p, 2] = np.sin(
-                    timestamp * (2 * np.pi / d)
+                    timestamp * (2 * np.pi / DAY)
                 )  # Day sin
                 y_hourly_all[t_hourly + t2, p, 3] = np.cos(
-                    timestamp * (2 * np.pi / y)
+                    timestamp * (2 * np.pi / YEAR)
                 )  # Year cos
                 y_hourly_all[t_hourly + t2, p, 4] = np.cos(
-                    timestamp * (2 * np.pi / d)
+                    timestamp * (2 * np.pi / DAY)
                 )  # Day cos
                 date += timedelta(hours=1)
             print(
-                f"Year {year} is too early for hourly data. Filled with missing value -1.\n"
+                f"Year {year} is too early for hourly data. Filled with missing value {fill_value}.\n"
             )
 
     print("Dataset downloaded 🙂\n")
 
-    t_daily += days_per_year
-    t_hourly += days_per_year * 24
+    t_daily += DAYS_PER_YEAR
+    t_hourly += DAYS_PER_YEAR * 24
 
 print(t_daily, " ", t_hourly)
 
