@@ -56,7 +56,7 @@ if args.year_end > datetime.utcnow().year:
     exit(1)
 
 # constants
-DAY = 24 * 60 * 60
+DAY = 24 * 60 * 60  # hours
 
 with open("locations.yml", "r", encoding="utf8") as file:
     content = yaml.safe_load(file)
@@ -225,14 +225,20 @@ for year in range(args.year_start, args.year_end + 1):
                 fill_value = content["header"][
                     "fill_value"
                 ]  # represents missing values (measurement error)
-                print(f"{name} ({units})")
+                print(f"{name} (k{units})")
                 print(f"Fill value: {fill_value}", "\n")
 
                 features_point = content["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
                 for t2, time_key in enumerate(features_point):
                     date = datetime.strptime(time_key, "%Y%m%d%H")
                     timestamp = date.replace(tzinfo=timezone.utc).timestamp()
-                    y_hourly_all[t_hourly + t2, p, 0] = features_point[time_key]
+                    if features_point[time_key] != fill_value:
+                        y_hourly_all[t_hourly + t2, p, 0] = (
+                            features_point[time_key] / 1000
+                        )  # Wh/m^2 -> kWh/m^2
+                    else:
+                        y_hourly_all[t_hourly + t2, p, 0] = fill_value
+
                     y_hourly_all[t_hourly + t2, p, 1] = np.sin(
                         timestamp * (2 * np.pi / YEAR)
                     )  # Year sin
@@ -283,22 +289,22 @@ print(f"Target daily shape: {y_daily_all.shape}")
 print(f"Target hourly shape: {y_hourly_all.shape}")
 
 # Descriptive Statistics
-print(f"Minimum: {np.min(X_all)}")
-print(f"Maximum: {np.max(X_all)}")
-print(f"Mean: {np.mean(X_all)}")
-print(f"Standard deviation: {np.std(X_all)}\n")
+print(f"Minimum: {np.min(X_all, axis=(0, 1))}")
+print(f"Maximum: {np.max(X_all, axis=(0, 1))}")
+print(f"Mean: {np.mean(X_all, axis=(0, 1))}")
+print(f"Standard deviation: {np.std(X_all, axis=(0, 1))}\n")
 
 # Descriptive Statistics
-print(f"Minimum: {np.min(y_daily_all)}")
-print(f"Maximum: {np.max(y_daily_all)}")
-print(f"Mean: {np.mean(y_daily_all)}")
-print(f"Standard deviation: {np.std(y_daily_all)}\n")
+print(f"Minimum: {np.min(y_daily_all, axis=(0, 1))}")
+print(f"Maximum: {np.max(y_daily_all, axis=(0, 1))}")
+print(f"Mean: {np.mean(y_daily_all, axis=(0, 1))}")
+print(f"Standard deviation: {np.std(y_daily_all, axis=(0, 1))}\n")
 
 # Descriptive Statistics
-print(f"Minimum: {np.min(y_hourly_all)}")
-print(f"Maximum: {np.max(y_hourly_all)}")
-print(f"Mean: {np.mean(y_hourly_all)}")
-print(f"Standard deviation: {np.std(y_hourly_all)}\n")
+print(f"Minimum: {np.min(y_hourly_all, axis=(0, 1))}")
+print(f"Maximum: {np.max(y_hourly_all, axis=(0, 1))}")
+print(f"Mean: {np.mean(y_hourly_all, axis=(0, 1))}")
+print(f"Standard deviation: {np.std(y_hourly_all, axis=(0, 1))}\n")
 
 # save dataset
 np.savez_compressed(
