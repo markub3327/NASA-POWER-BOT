@@ -32,7 +32,13 @@ module Menu
                 help = "Timeout"
 
         end
-        return parse_args(s)
+        
+        args = parse_args(s)
+
+        # check the arguments correctness
+        @assert args["start"] <= args["end"]
+
+        return args
     end
 
 end

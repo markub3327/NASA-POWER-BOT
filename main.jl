@@ -7,6 +7,7 @@ using Dates
 using DataFrames
 using CSV
 using YAML
+using ProgressMeter
 using Plots
 using StatsPlots
 gr(size=(2000, 2000))
@@ -17,29 +18,21 @@ const HOUR_PERIOD = 24
 
 function main()
     fill_value_regional, fill_value_point_daily, fill_value_point_hourly  = nothing, nothing, nothing
-    groupID = Atomic{Int}(1)
     parsed_args = Menu.main_menu()
     locations = YAML.load_file("locations.yml")
-
-    println("\u001b[33;1m----------------------------------------------------------\u001b[0m")
-    println("\u001b[34;1mNASA \u001b[31;1mPower \u001b[32;1mBot\u001b[0m ⛅ 🌞 ⚡ 🛰️")
-    println("Years range: $(parsed_args["start"]) - $(parsed_args["end"])")
-    println("Locations:")
-    for loc in keys(locations["target_locations"])
-        println("         * $(loc)")
-    end
-    println("\u001b[33;1m----------------------------------------------------------\u001b[0m\n")
+    progress_bar = Progress(((parsed_args["end"] - parsed_args["start"] + 1) * length(locations["target_locations"])), 1, "Downloading:")
 
     # Temporal dataset per thread
     df_regional_daily = [ DataFrame(
-        DateTime = Date[],  
+        DateTime = Date[],
         MonthSin = Float32[],
         MonthCos = Float32[],
         DaySin = Float32[],
         DayCos = Float32[],
+        Name = String[],
+        RegionID = Int64[],
         Latitude = Float32[],
-        Longitude = Float32[], 
-        GroupID = Int64[], 
+        Longitude = Float32[],
         Irradiance = Float32[]
     ) for _ in 1:nthreads()]
     df_point_daily = [ DataFrame(
@@ -48,6 +41,7 @@ function main()
         MonthCos = Float32[],
         DaySin = Float32[],
         DayCos = Float32[],
+        Name = String[],
         Latitude = Float32[],
         Longitude = Float32[], 
         Irradiance = Float32[]
@@ -60,23 +54,33 @@ function main()
         DayCos = Float32[],
         HourSin = Float32[],
         HourCos = Float32[],
+        Name = String[],
         Latitude = Float32[],
         Longitude = Float32[],
         Irradiance = Float32[]
     ) for _ in 1:nthreads()]
 
+    # Information about the downloaded dataset
+    println("\u001b[33;1m----------------------------------------------------------\u001b[0m")
+    println("\u001b[34;1mNASA \u001b[31;1mPower \u001b[32;1mBot\u001b[0m ⛅ 🌞 ⚡ 🛰️")
+    println("Years range: $(parsed_args["start"]) - $(parsed_args["end"])")
+    println("Locations:")
+    for loc in keys(locations["target_locations"])
+        println("          * $(loc)")
+    end
+    println("\u001b[33;1m----------------------------------------------------------\u001b[0m\n")
+
+    # Downloading data
     @threads for year in parsed_args["start"]:parsed_args["end"]
         DAY_PERIOD = Dates.daysinyear(year)
-        
+
         # Region - daily
         for (location_name, location) in locations["target_locations"]
-            latitude_min, latitude_max, longitude_min, longitude_max = Utils.get_area(location, parsed_args["width"], parsed_args["height"])
-            
-            data_regional = NASAPowerDownloader.download_regional(year, Utils.Region(latitude_min, latitude_max, longitude_min, longitude_max), "daily", parsed_args["timeout"])
+            data_regional = NASAPowerDownloader.download_regional(year, Utils.get_area(location, parsed_args["width"], parsed_args["height"]), "daily", parsed_args["timeout"])
+            long_name = data_regional["parameters"]["ALLSKY_SFC_SW_DWN"]["longname"]
+            units = data_regional["parameters"]["ALLSKY_SFC_SW_DWN"]["units"]
+            fill_value_regional = data_regional["header"]["fill_value"]
             for f in 1:length(data_regional["features"])
-                long_name = data_regional["parameters"]["ALLSKY_SFC_SW_DWN"]["longname"]
-                units = data_regional["parameters"]["ALLSKY_SFC_SW_DWN"]["units"]
-                fill_value_regional = data_regional["header"]["fill_value"]
                 irradiance = data_regional["features"][f]["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
                 point = data_regional["features"][f]["geometry"]["coordinates"]
                 for (t, value) in irradiance
@@ -87,9 +91,10 @@ function main()
                         cospi(month(t) / MONTH_PERIOD * 2),
                         sinpi(dayofyear(t) / DAY_PERIOD * 2),
                         cospi(dayofyear(t) / DAY_PERIOD * 2),
+                        location_name,
+                        f,
                         point[2],
                         point[1],
-                        groupID[],
                         value
                     ])
                 end
@@ -110,6 +115,7 @@ function main()
                     cospi(month(t) / MONTH_PERIOD * 2),
                     sinpi(dayofyear(t) / DAY_PERIOD * 2),
                     cospi(dayofyear(t) / DAY_PERIOD * 2),
+                    location_name,
                     point[2],
                     point[1],
                     value
@@ -134,17 +140,15 @@ function main()
                         cospi(dayofyear(t) / DAY_PERIOD * 2),
                         sinpi(hour(t) / HOUR_PERIOD * 2),
                         cospi(hour(t) / HOUR_PERIOD * 2),
+                        location_name,
                         point[2],
                         point[1],
                         value
                     ])
                 end
-
-                # increment groupID
-                atomic_add!(groupID, 1)
             end
 
-            break
+            next!(progress_bar)
         end
     end
 
@@ -167,20 +171,22 @@ function main()
     # Convert to kW/m^2
     y_all_hourly.Irradiance = y_all_hourly.Irradiance / 1000
 
-    sort!(X_all_daily, [:DateTime, :Latitude, :Longitude, :GroupID])    # (timestep, patch, features)
-    sort!(y_all_daily, [:DateTime, :Latitude, :Longitude])      # (timestep, patch, features)
-    sort!(y_all_hourly, [:DateTime, :Latitude, :Longitude])     # (timestep, patch, features)
-    println(X_all_daily)
-    println(y_all_daily)
-    println(y_all_hourly)
+    sort!(X_all_daily, [:DateTime, :Name])    # (timestep, patch, features)
+    sort!(y_all_daily, [:DateTime, :Name])    # (timestep, patch, features)
+    sort!(y_all_hourly, [:DateTime, :Name])   # (timestep, patch, features)
 
-    println("Dataset downloaded 🙂\n")
+    println("\nDataset downloaded 🙂🙂🙂\n")
 
     # Show summary statistics
-    println(describe(X_all_daily, :all))
-    println(describe(y_all_daily, :all))
-    println(describe(y_all_hourly, :all))
+    println(describe(X_all_daily, :mean, :std, :median, :min, :max))
+    println(describe(y_all_daily, :mean, :std, :median, :min, :max))
+    println(describe(y_all_hourly, :mean, :std, :median, :min, :max))
 
+    # write DataFrame out to CSV file
+    CSV.write("dataset/X_all_daily.csv", X_all_daily)
+    CSV.write("dataset/y_all_daily.csv", y_all_daily)
+    CSV.write("dataset/y_all_hourly.csv", y_all_hourly)
+    
     # Plotting density plot
     p1 = @df X_all_daily density(
         :Latitude,
@@ -352,11 +358,6 @@ function main()
         plot(p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, layout = (5, 2), legend = false, dpi = 600),  # , title = "Point hourly dataset"
         "imgs/y_all_hourly.png"
     )
-
-    # write DataFrame out to CSV file
-    CSV.write("dataset/X_all_daily.csv", X_all_daily)
-    CSV.write("dataset/y_all_daily.csv", y_all_daily)
-    CSV.write("dataset/y_all_hourly.csv", y_all_hourly)
 end
 
 

@@ -15,7 +15,7 @@ module  Utils
     function get_area(loc, width, height)
         offset_x = width / 2
         offset_y = height / 2
-        return (
+        return Region(
             round(loc[1] - offset_x, digits = 6),
             round(loc[1] + offset_x, digits = 6),
             round(loc[2] - offset_y, digits = 6),

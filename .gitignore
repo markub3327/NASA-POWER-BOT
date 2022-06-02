@@ -3,3 +3,6 @@
 
 # Dataset
 dataset/
+
+# VS Code
+.vscode/
