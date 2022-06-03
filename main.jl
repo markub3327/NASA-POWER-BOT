@@ -30,11 +30,14 @@ function main()
         DaySin = Float32[],
         DayCos = Float32[],
         Name = String[],
-        RegionID = Int64[],
         Latitude = Float32[],
-        Longitude = Float32[],
-        Irradiance = Float32[]
+        Longitude = Float32[]
     ) for _ in 1:nthreads()]
+    for i in 1:nthreads()
+        for j in 1:16
+            df_regional_daily[i][!, "Value$(j)"] = Float32[]
+        end
+    end
     df_point_daily = [ DataFrame(
         DateTime = Date[],
         MonthSin = Float32[],
@@ -80,24 +83,33 @@ function main()
             long_name = data_regional["parameters"]["ALLSKY_SFC_SW_DWN"]["longname"]
             units = data_regional["parameters"]["ALLSKY_SFC_SW_DWN"]["units"]
             fill_value_regional = data_regional["header"]["fill_value"]
+            
+            X = Dict{String, Array{Float32}}()     # temporary
             for f in 1:length(data_regional["features"])
                 irradiance = data_regional["features"][f]["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
-                point = data_regional["features"][f]["geometry"]["coordinates"]
                 for (t, value) in irradiance
-                    t = Date(t, "yyyymmdd")
-                    push!(df_regional_daily[threadid()], [
-                        t,
-                        sinpi(month(t) / MONTH_PERIOD * 2),
-                        cospi(month(t) / MONTH_PERIOD * 2),
-                        sinpi(dayofyear(t) / DAY_PERIOD * 2),
-                        cospi(dayofyear(t) / DAY_PERIOD * 2),
-                        location_name,
-                        f,
-                        point[2],
-                        point[1],
-                        value
-                    ])
+                    if haskey(X, t)
+                        push!(X[t], value)        # copying
+                    else
+                        X[t] = [value]            # creating
+                    end
                 end
+            end
+            #println(X)
+
+            for (t, value) in X
+                t = Date(t, "yyyymmdd")
+                push!(df_regional_daily[threadid()], [
+                    t,
+                    sinpi(month(t) / MONTH_PERIOD * 2),
+                    cospi(month(t) / MONTH_PERIOD * 2),
+                    sinpi(dayofyear(t) / DAY_PERIOD * 2),
+                    cospi(dayofyear(t) / DAY_PERIOD * 2),
+                    location_name,
+                    location[1],
+                    location[2],
+                    value...
+                ])
             end
 
             # Point - daily
@@ -158,9 +170,9 @@ function main()
     y_all_hourly = vcat(df_point_hourly...)
 
     # remove bad data
-    if fill_value_regional != nothing
-        X_all_daily = filter(:Irradiance => v -> v != fill_value_regional, X_all_daily)
-    end
+    #if fill_value_regional != nothing
+    #    X_all_daily = filter(:Irradiance => v -> v != fill_value_regional, X_all_daily)
+    #end
     if fill_value_point_daily != nothing
         y_all_daily = filter(:Irradiance => v -> v != fill_value_point_daily, y_all_daily)
     end
