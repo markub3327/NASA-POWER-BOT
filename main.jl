@@ -34,7 +34,7 @@ function main()
         Longitude = Float32[]
     ) for _ in 1:nthreads()]
     for i in 1:nthreads()
-        for j in 1:16
+        for j::Int in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2
             df_regional_daily[i][!, "Value$(j)"] = Float32[]
         end
     end
@@ -170,9 +170,11 @@ function main()
     y_all_hourly = vcat(df_point_hourly...)
 
     # remove bad data
-    #if fill_value_regional != nothing
-    #    X_all_daily = filter(:Irradiance => v -> v != fill_value_regional, X_all_daily)
-    #end
+    if fill_value_regional != nothing
+        for j::Int in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2
+            X_all_daily = filter("Value$(j)" => v -> v != fill_value_regional, X_all_daily)
+        end    
+    end
     if fill_value_point_daily != nothing
         y_all_daily = filter(:Irradiance => v -> v != fill_value_point_daily, y_all_daily)
     end
@@ -213,17 +215,17 @@ function main()
         ylab = "Distribution"
     )
     p3 = @df X_all_daily density(
-        :Irradiance,
+        :Value1,
         title="Distribution of Solar Irradiance",
         xlab = "Solar Irradiance",
         ylab = "Distribution"
     )
     p4 = @df X_all_daily plot(
-        :Irradiance,
+        :Value1,
         title = "Solar Irradiance",
         xlab = "Time",
         ylab = "Solar Irradiance"
-    )    
+    )
     p5 = @df X_all_daily plot(
         :MonthSin,
         title = "Month sin feature",
