@@ -13,7 +13,7 @@ using YAML
 using ProgressMeter
 using Plots
 using StatsPlots
-gr(size=(2000, 2000))
+#gr(size=(2000, 2000))
 
 # Constants
 const MONTH_PERIOD = 12
@@ -35,49 +35,31 @@ function main()
 
                 # Choose one of two locations to keep by it's power or area if defined.
                 # The last option is random selection.
-                if iou > 0.5
+                if iou > 0.4
                     println("Point A: $(location_name_A)")
                     println("Point B: $(location_name_B)")
                     println("IoU: $(iou)")
-    
+                    println()
+
                     if (haskey(point_A, "power") && haskey(point_B, "power"))
-                        if (point_A["power"] > point_B["power"])
-                            if haskey(point_B, "permanent") == false || point_B["permanent"] == false
-                                delete!(locations["target_locations"], location_name_B)
-                                println("Removing location: $(location_name_B)")
-                            end
+                        if point_A["power"] > point_B["power"]
+                            delete!(locations["target_locations"], location_name_B)
                         else
-                            if haskey(point_A, "permanent") == false || point_A["permanent"] == false
-                                delete!(locations["target_locations"], location_name_A)
-                                println("Removing location: $(location_name_A)")
-                            end
+                            delete!(locations["target_locations"], location_name_A)
                         end
                     elseif (haskey(point_A, "area") && haskey(point_B, "area"))
-                        if (point_A["area"] > point_B["area"])
-                            if haskey(point_B, "permanent") == false || point_B["permanent"] == false
-                                delete!(locations["target_locations"], location_name_B)
-                                println("Removing location: $(location_name_B)")
-                            end
+                        if point_A["area"] > point_B["area"]
+                            delete!(locations["target_locations"], location_name_B)
                         else
-                            if haskey(point_A, "permanent") == false || point_A["permanent"] == false
-                                delete!(locations["target_locations"], location_name_A)
-                                println("Removing location: $(location_name_A)")
-                            end
+                            delete!(locations["target_locations"], location_name_A)
                         end
                     else
-                        if (rand(1:2) == 1)         # Randomly choose one of the two locations
-                            if haskey(point_B, "permanent") == false || point_B["permanent"] == false
-                                delete!(locations["target_locations"], location_name_B)
-                                println("Removing location: $(location_name_B)")
-                            end
+                        if rand() > 0.5
+                            delete!(locations["target_locations"], location_name_B)
                         else
-                            if haskey(point_A, "permanent") == false || point_A["permanent"] == false
-                                delete!(locations["target_locations"], location_name_A)
-                                println("Removing location: $(location_name_A)")
-                            end
+                            delete!(locations["target_locations"], location_name_A)
                         end
                     end
-                    println()
                 end
             end
         end
