@@ -23,7 +23,6 @@ function main()
     fill_value_regional, fill_value_point_daily, fill_value_point_hourly  = nothing, nothing, nothing
     parsed_args = Menu.main_menu()
     locations = YAML.load_file("config/locations.yml")
-    progress_bar = Progress(((parsed_args["end"] - parsed_args["start"] + 1) * length(locations["target_locations"])), 1, "Downloading:")
 
     # Prune the locations list
     for (location_name_A, point_A) in locations["target_locations"]
@@ -40,7 +39,7 @@ function main()
                     println("Point B: $(location_name_B)")
                     println("IoU: $(iou)")
                     println()
-                    
+
                     if (haskey(point_A, "permanent") && point_A["permanent"] == true)
                         if (haskey(point_B, "permanent") == false || point_B["permanent"] == false)
                             delete!(locations["target_locations"], location_name_B)
@@ -75,6 +74,9 @@ function main()
 
     # Save pruned version of the locations list
     YAML.write_file("config/locations_pruned.yml", locations)
+
+    # Init progress bar
+    progress_bar = Progress(((parsed_args["end"] - parsed_args["start"] + 1) * length(locations["target_locations"])), 1, "Downloading:")
 
     # Temporal dataset per thread
     df_regional_daily = [ DataFrame(
@@ -427,17 +429,11 @@ function main()
     # )
 
     # Region Heatmap
-    # num_round = 10
-    # bst = xgboost(
-    #     X_all_daily[!, ["Value1", "Value2", "Value3"]],
-    #     num_round,
-    #     y_all_daily[!, "Irradiance"], 
-    #     eta=0.1, 
-    #     max_depth=7, 
-    #     obj=:squarederror, 
-    #     metrics=[:rmse, :mae])
-    # importance_matrix = importance(model=bst)
-    # println(importance_matrix)
+    train_X = Matrix(X_all_daily[!, ["Value$(j)" for j::Int in 1:(parsed_args["width"] * 2 * parsed_args["height"] * 2)]])
+    train_Y = y_all_daily[!, "Irradiance"]
+    bst = xgboost(train_X, 20, label = train_Y, eta = 0.5, max_depth = 5, objective = "reg:squarederror", metrics=["rmse", "mae"])
+    importance_matrix = importance(bst, sort_by = :name)
+    println(importance_matrix)
 
     data1 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
     data2 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
@@ -447,7 +443,7 @@ function main()
         for j::Int in 1:parsed_args["width"] * 2
             data1[i, j] = cor(X_all_daily[!, "Value$(k)"], y_all_daily[!, "Irradiance"])
             data2[i, j] = corspearman(X_all_daily[!, "Value$(k)"], y_all_daily[!, "Irradiance"])
-            #data3[i, j] = importance_matrix[k]
+            data3[i, j] = importance_matrix[k].gain
             k = k + 1
         end
     end
@@ -455,7 +451,7 @@ function main()
         plot(
             plot(heatmap(data1, clim=(0.0, 1.0)), title = "Pearson Correlation Region - Point", xlab = "Latitude", ylab = "Longitude", dpi = 600),        
             plot(heatmap(data2, clim=(0.0, 1.0)), title = "Spearman Correlation Region - Point", xlab = "Latitude", ylab = "Longitude", dpi = 600),
-            plot(heatmap(data3), title = "XGBoost Correlation Region - Point", xlab = "Latitude", ylab = "Longitude", dpi = 600),        
+            plot(heatmap(data3, clim=(0.0, 1.0)), title = "XGBoost Correlation Region - Point", xlab = "Latitude", ylab = "Longitude", dpi = 600),        
             layout = (3, 1),
             legend = false,
             dpi = 600
