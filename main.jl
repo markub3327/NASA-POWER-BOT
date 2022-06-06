@@ -40,30 +40,38 @@ function main()
                     println("Point B: $(location_name_B)")
                     println("IoU: $(iou)")
                     println()
-
-                    if (haskey(point_A, "power") && haskey(point_B, "power"))
-                        if point_A["power"] > point_B["power"]
+                    
+                    if (haskey(point_A, "permanent") && point_A["permanent"] == true)
+                        if (haskey(point_B, "permanent") == false || point_B["permanent"] == false)
                             delete!(locations["target_locations"], location_name_B)
-                        else
-                            delete!(locations["target_locations"], location_name_A)
                         end
-                    elseif (haskey(point_A, "area") && haskey(point_B, "area"))
-                        if point_A["area"] > point_B["area"]
-                            delete!(locations["target_locations"], location_name_B)
-                        else
-                            delete!(locations["target_locations"], location_name_A)
-                        end
+                    elseif (haskey(point_B, "permanent") && point_B["permanent"] == true)
+                        delete!(locations["target_locations"], location_name_A)
                     else
-                        if rand() > 0.5
-                            delete!(locations["target_locations"], location_name_B)
+                        if (haskey(point_A, "power") && haskey(point_B, "power"))
+                            if point_A["power"] > point_B["power"]
+                                delete!(locations["target_locations"], location_name_B)
+                            else
+                                delete!(locations["target_locations"], location_name_A)
+                            end
+                        elseif (haskey(point_A, "area") && haskey(point_B, "area"))
+                            if point_A["area"] > point_B["area"]
+                                delete!(locations["target_locations"], location_name_B)
+                            else
+                                delete!(locations["target_locations"], location_name_A)
+                            end
                         else
-                            delete!(locations["target_locations"], location_name_A)
+                            if rand() > 0.5
+                                delete!(locations["target_locations"], location_name_B)
+                            else
+                                delete!(locations["target_locations"], location_name_A)
+                            end
                         end
                     end
                 end
-            end
-        end
-    end 
+           end
+        end 
+    end
 
     # Save pruned version of the locations list
     YAML.write_file("config/locations_pruned.yml", locations)
