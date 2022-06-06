@@ -1,0 +1,188 @@
+---
+
+target_locations: {
+    # Original paper
+    "Target 1": { 
+        "location": [23.25991, 77.41261], 
+        "permanent": true 
+    },
+    "Target 2": { 
+        "location": [22.71961, 75.85771], 
+        "permanent": true 
+    },
+
+    # Solar parks in India
+    "Bhadla Solar Park": { 
+        "location": [27.539669, 71.915253],
+        "power": 2245,    # MW
+        "area": 57       # km^2
+    },
+    "Pavagada Solar Park": { 
+        "location": [14.251944, 77.447500],
+        "power": 2050,    # MW
+        "area": 53       # km^2
+    },
+    "Kurnool Ultra Mega Solar Park": {
+        "location": [15.681522, 78.283749],
+        "power": 1000,    # MW
+        "area": 24       # km^2
+    },
+    "NP Kunta Ultra Mega Solar Park": { 
+        "location": [14.031944, 78.435833],
+        "power": 978.5,    # MW
+        "area": 32       # km^2
+    },
+    "Rewa Ultra Mega Solar": {
+        "location": [24.480278, 81.574444],
+        "power": 750,    # MW
+        "area": 6.4       # km^2
+    },
+    "Charanka Solar Park": {
+        "location": [23.900000, 71.200000],
+        "power": 615,    # MW
+        "area": 20       # km^2
+    },
+    "Kamuthi Solar Power Project": {
+        "location": [9.347568, 78.392162],
+        "power": 648,    # MW
+        "area": 10       # km^2
+    },
+    "Ananthapuramu - II": {
+        "location": [14.980278, 78.045833],
+        "power": 500,    # MW
+        "area": 4       # km^2
+    },
+    "Galiveedu solar park": {
+        "location": [14.105833, 78.465833],
+        "power": 500,    # MW
+        "area": 25       # km^2
+    },
+    "Mandsaur Solar Farm": {
+        "location": [24.088056, 75.799722],
+        "power": 250,    # MW
+        "area": 1.1435      # km^2
+    },
+    "Kadapa Ultra Mega Solar Park": {
+        "location": [14.916389, 78.291944],
+        "power": 1000,    # MW
+        "area": 24       # km^2
+    },
+    "Welspun Solar MP project": {
+        "location": [24.690700, 75.134700],
+        "power": 151,    # MW
+        "area": 3       # km^2
+    },
+    "Karnataka I solar power plant": {
+        "location": [15.651944, 75.992500],
+        "power": 40.5,    # MW
+        "area": 0.72       # km^2
+    },
+    "Bitta Solar Power Plant": {
+        "location": [23.262778, 69.024167],
+        "power": 40,    # MW
+        "area": 1.4       # km^2
+    },
+    "Dhirubhai Ambani Solar Park": {
+        "location": [26.763056, 72.014167],
+        "power": 40,    # MW
+        "area": 1.4       # km^2
+    },
+    "Mithapur Solar Power Plant": {
+        "location": [22.409125, 68.993183],
+        "power": 25,    # MW
+        "area": 0.4       # km^2
+    },
+    "Telangana II Solar Power Plant": {
+        "location": [16.152778, 77.765556],
+        "power": 12,    # MW
+        "area": 0.16       # km^2
+    },
+    "BOSCH Solar Power Plant": {
+        "location": [15.981156, 74.998076],
+        "power": 115,    # MW
+        "area": 0.364    # km^2
+    },
+    "Katwa Cements Pvt Ltd Solar": {
+        "location": [15.984205, 75.000738],
+        "power": 3,    # MW
+    },
+    "Yarganvi Solar Power Project": {
+        "location": [15.970427, 74.982154],
+    },
+    "Urja Solar Power Plant": {
+        "location": [15.928395, 74.529302],
+        "power": 0.5,    # MW
+    },
+    "Basargi Solar Power Plant": {
+        "location": [15.913273, 74.894727],
+    },
+    "RSPPL Solar Power Plant": {
+        "location": [16.178437, 74.789731],
+    },
+    "Arete Elena Energy Pvt Ltd": {
+        "location": [15.861840, 74.909739],
+    },
+    "Solar power plant Devankatti": {
+        "location": [16.373889, 74.774039],
+    },
+    "Solar power plant Koppal": {
+        "location": [15.552097, 76.430815],
+    },
+    "Solar power plant Vankihal": {
+        "location": [16.520022, 76.811548],
+    },
+    "54 MW PV SOLAR POWER PLANT": {
+        "location": [21.313376, 78.601300],
+        "power": 54,    # MW
+    },
+    "Adani Green Energy Tamilnadu Limited": {
+        "location": [9.332771, 78.388731],
+    },
+    "Solar Power Plant Khera Silajit": {
+        "location": [25.835157, 79.652870],
+    },
+    "Solar Power Plant Chandasar": {
+        "location": [27.972365, 73.063411],
+    },
+    "60MWp Solar Power Plant": {
+        "location": [27.949559, 72.988087],
+        "power": 60,    # MW
+    },
+    "2 kW Solar PV plant installed by Suvarnuday Ecoenergy Pvt. Ltd.": {
+        "location": [16.550142, 74.247759],
+        "power": 0.002,    # MW
+    },
+    "5MW Solar Power Plant Varroc": {
+        "location": [21.059537, 74.375055],
+        "power": 5,    # MW
+    },
+
+    # Buildings with solar panels
+    "Ctrls Data Center Mumbai": {
+        "location": [19.063336, 72.861819],
+        "power": 1,    # MW
+        "area": 0.000465      # km^2
+    },
+    "HUDA City Centre metro station": {
+        "location": [28.459167, 77.072500],
+        "power": 0.1    # MW
+    },
+    "PUNE RAILWAY STATION": {
+        "location": [18.528821, 73.87315],
+        "power": 0.16    # MW
+    },
+    "Indira Paryavaran Bhawan": {
+        "location": [28.585154, 77.218347],
+        "power": 0.93,    # MW
+        "area": 0.0046    # km^2
+    },
+    "Dell India": {
+        "location": [12.978386, 77.665749],
+        "power": 0.12,    # MW
+    },
+    "Chennai Metropolitan Area": {
+        "location": [13.083667, 80.268667]
+    }
+}
+
+...

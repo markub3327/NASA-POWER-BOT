@@ -18,7 +18,7 @@ function download_regional(year, regional, mode, timeout=30)
     catch e
         # Too Many Requests
         if (e.status == 429)
-            sleep(10)
+            sleep(5)
             # println("Retrying download ♻️")
             return download_regional(year, regional, mode, timeout)
         else
@@ -41,7 +41,7 @@ function download_point(year, point, mode, timeout=30)
     catch e
         # Too Many Requests
         if (e.status == 429)
-            sleep(10)
+            sleep(5)
             # println("Retrying download ♻️")
             return download_point(year, point, mode, timeout)
         else
