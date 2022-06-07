@@ -431,8 +431,8 @@ function main()
     data1 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
     data2 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
     k = 1
-    for i::Int in 1:parsed_args["height"] * 2
-        for j::Int in 1:parsed_args["width"] * 2
+    for j::Int in 1:parsed_args["height"] * 2
+        for i::Int in 1:parsed_args["width"] * 2
             data1[i, j] = cor(X_all_daily[!, "Value$(k)"], y_all_daily[!, "Irradiance"])
             data2[i, j] = corspearman(X_all_daily[!, "Value$(k)"], y_all_daily[!, "Irradiance"])
             k = k + 1
