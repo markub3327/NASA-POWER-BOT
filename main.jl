@@ -3,7 +3,6 @@ include("./utils.jl")
 include("./menu.jl")
 
 using Statistics
-using XGBoost
 using StatsBase
 using Base.Threads
 using Dates
@@ -13,7 +12,7 @@ using YAML
 using ProgressMeter
 using Plots
 using StatsPlots
-#gr(size=(2000, 2000))
+gr(size=(2000, 2000))
 
 # Constants
 const MONTH_PERIOD = 12
@@ -429,21 +428,13 @@ function main()
     # )
 
     # Region Heatmap
-    train_X = Matrix(X_all_daily[!, ["Value$(j)" for j::Int in 1:(parsed_args["width"] * 2 * parsed_args["height"] * 2)]])
-    train_Y = y_all_daily[!, "Irradiance"]
-    bst = xgboost(train_X, 20, label = train_Y, eta = 0.5, max_depth = 5, objective = "reg:squarederror", metrics=["rmse", "mae"])
-    importance_matrix = importance(bst, sort_by = :name)
-    println(importance_matrix)
-
     data1 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
     data2 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data3 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
     k = 1
     for i::Int in 1:parsed_args["height"] * 2
         for j::Int in 1:parsed_args["width"] * 2
             data1[i, j] = cor(X_all_daily[!, "Value$(k)"], y_all_daily[!, "Irradiance"])
             data2[i, j] = corspearman(X_all_daily[!, "Value$(k)"], y_all_daily[!, "Irradiance"])
-            data3[i, j] = importance_matrix[k].gain
             k = k + 1
         end
     end
@@ -451,8 +442,7 @@ function main()
         plot(
             plot(heatmap(data1, clim=(0.0, 1.0)), title = "Pearson Correlation Region - Point", xlab = "Latitude", ylab = "Longitude", dpi = 600),        
             plot(heatmap(data2, clim=(0.0, 1.0)), title = "Spearman Correlation Region - Point", xlab = "Latitude", ylab = "Longitude", dpi = 600),
-            plot(heatmap(data3, clim=(0.0, 1.0)), title = "XGBoost Correlation Region - Point", xlab = "Latitude", ylab = "Longitude", dpi = 600),        
-            layout = (3, 1),
+            layout = (2, 1),
             legend = false,
             dpi = 600
         ),
