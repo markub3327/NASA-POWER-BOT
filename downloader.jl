@@ -10,7 +10,7 @@ function download_regional(year, regional, mode, timeout=30)
     try
         r = HTTP.request(
             "GET", 
-            "https://power.larc.nasa.gov/api/temporal/$(mode)/regional?start=$(year)0101&end=$(year)1231&latitude-min=$(regional.latitude_min)&latitude-max=$(regional.latitude_max)&longitude-min=$(regional.longitude_min)&longitude-max=$(regional.longitude_max)&community=re&parameters=ALLSKY_SFC_SW_DWN&time-standard=utc&format=json&header=true",
+            "https://power.larc.nasa.gov/api/temporal/$(mode)/regional?start=$(year)0101&end=$(year)1231&latitude-min=$(regional.latitude_min)&latitude-max=$(regional.latitude_max)&longitude-min=$(regional.longitude_min)&longitude-max=$(regional.longitude_max)&community=re&parameters=ALLSKY_SFC_SW_DWN,T2M,RH2M,WS10M,WS10M_MAX,WD10M,PS&time-standard=utc&format=json&header=true",
             readtimeout = timeout
         )
         j = JSON.parse(String(r.body))

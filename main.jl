@@ -10,9 +10,7 @@ using DataFrames
 using CSV
 using YAML
 using ProgressMeter
-using Plots
-using StatsPlots
-gr(size=(2000, 2000))
+using CairoMakie
 
 # Constants
 const MONTH_PERIOD = 12
@@ -33,7 +31,7 @@ function main()
 
                 # Choose one of two locations to keep by it's power or area if defined.
                 # The last option is random selection.
-                if iou > 0.4
+                if iou > 0.3
                     println("Point A: $(location_name_A)")
                     println("Point B: $(location_name_B)")
                     println("IoU: $(iou)")
@@ -90,7 +88,17 @@ function main()
     ) for _ in 1:nthreads()]
     for i in 1:nthreads()
         for j::Int in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2
-            df_regional_daily[i][!, "Value$(j)"] = Float32[]
+            df_regional_daily[i][!, "Irradiance$(j)"] = Float32[]
+            df_regional_daily[i][!, "Temp$(j)"] = Float32[]
+            df_regional_daily[i][!, "Humidity$(j)"] = Float32[]
+            df_regional_daily[i][!, "WindSpeed$(j)"] = Float32[]
+            df_regional_daily[i][!, "WindSpeedMax$(j)"] = Float32[]
+            df_regional_daily[i][!, "WindDirection$(j)"] = Float32[]
+            df_regional_daily[i][!, "WindX$(j)"] = Float32[]
+            df_regional_daily[i][!, "WindY$(j)"] = Float32[]
+            df_regional_daily[i][!, "WindXMax$(j)"] = Float32[]
+            df_regional_daily[i][!, "WindYMax$(j)"] = Float32[]
+            df_regional_daily[i][!, "Pressure$(j)"] = Float32[]
         end
     end
     df_point_daily = [ DataFrame(
@@ -129,7 +137,7 @@ function main()
     println("\u001b[33;1m----------------------------------------------------------\u001b[0m\n")
 
     # Downloading data
-    @threads for year in parsed_args["start"]:parsed_args["end"]
+    @threads :dynamic for year in parsed_args["start"]:parsed_args["end"]
         DAY_PERIOD = Dates.daysinyear(year)
 
         # Region - daily
@@ -143,11 +151,44 @@ function main()
             features = data_regional["features"]
             for f in keys(features)
                 irradiance = features[f]["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
-                for (t, value) in irradiance
-                    if haskey(X, t)
-                        push!(X[t], value)        # copying
+                temp = features[f]["properties"]["parameter"]["T2M"]
+                humidity = features[f]["properties"]["parameter"]["RH2M"]
+                wind_speed = features[f]["properties"]["parameter"]["WS10M"]
+                wind_speed_max = features[f]["properties"]["parameter"]["WS10M_MAX"]
+                wind_direction = features[f]["properties"]["parameter"]["WD10M"]
+                pressure = features[f]["properties"]["parameter"]["PS"]
+                for (i, t, h, ws, ws_max, wd, p) in zip(irradiance, temp, humidity, wind_speed, wind_speed_max, wind_direction, pressure)
+                    time = i[1]
+                    if haskey(X, time)
+                        push!(X[time], i[2])        # copying
+                        push!(X[time], t[2])        # copying
+                        push!(X[time], h[2])        # copying
+                        push!(X[time], ws[2])       # copying
+                        push!(X[time], ws_max[2])   # copying
+                        push!(X[time], wd[2])       # copying
+
+                        wd_rad = deg2rad(wd[2])
+                        push!(X[time], ws[2]*cos(wd_rad - (pi/2)))       # copying
+                        push!(X[time], ws[2]*sin(wd_rad - (pi/2)))       # copying
+                        push!(X[time], ws_max[2]*cos(wd_rad - (pi/2)))   # copying
+                        push!(X[time], ws_max[2]*sin(wd_rad - (pi/2)))   # copying
+
+                        push!(X[time], p[2])        # copying
                     else
-                        X[t] = [value]            # creating
+                        wd_rad = deg2rad(wd[2])
+                        X[time] = [
+                            i[2], 
+                            t[2], 
+                            h[2], 
+                            ws[2],
+                            ws_max[2],  
+                            wd[2],
+                            ws[2]*cos(wd_rad - (pi/2)),
+                            ws[2]*sin(wd_rad - (pi/2)),
+                            ws_max[2]*cos(wd_rad - (pi/2)),
+                            ws_max[2]*sin(wd_rad - (pi/2)),
+                            p[2]
+                        ]            # creating
                     end
                 end
             end
@@ -224,15 +265,25 @@ function main()
     y_all_hourly = vcat(df_point_hourly...)
 
     # remove bad data
-    if fill_value_regional != nothing
+    if !isnothing(fill_value_regional)
         for j::Int in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2
-            X_all_daily = filter("Value$(j)" => v -> v != fill_value_regional, X_all_daily)
-        end    
+            X_all_daily = filter("Irradiance$(j)" => v -> v != fill_value_regional, X_all_daily)
+            X_all_daily = filter("Temp$(j)" => v -> v != fill_value_regional, X_all_daily)
+            X_all_daily = filter("Humidity$(j)" => v -> v != fill_value_regional, X_all_daily)
+            X_all_daily = filter("WindSpeed$(j)" => v -> v != fill_value_regional, X_all_daily)
+            X_all_daily = filter("WindSpeedMax$(j)" => v -> v != fill_value_regional, X_all_daily)
+            X_all_daily = filter("WindDirection$(j)" => v -> v != fill_value_regional, X_all_daily)
+            X_all_daily = filter("WindX$(j)" => v -> v != fill_value_regional, X_all_daily)
+            X_all_daily = filter("WindY$(j)" => v -> v != fill_value_regional, X_all_daily)
+            X_all_daily = filter("WindXMax$(j)" => v -> v != fill_value_regional, X_all_daily)
+            X_all_daily = filter("WindYMax$(j)" => v -> v != fill_value_regional, X_all_daily)
+            X_all_daily = filter("Pressure$(j)" => v -> v != fill_value_regional, X_all_daily)
+        end
     end
-    if fill_value_point_daily != nothing
+    if !isnothing(fill_value_point_daily)
         y_all_daily = filter(:Irradiance => v -> v != fill_value_point_daily, y_all_daily)
     end
-    if fill_value_point_hourly != nothing
+    if !isnothing(fill_value_point_hourly)
         y_all_hourly = filter(:Irradiance => v -> v != fill_value_point_hourly, y_all_hourly)
     end
 
@@ -254,201 +305,151 @@ function main()
     CSV.write("dataset/X_all_daily.csv", X_all_daily)
     CSV.write("dataset/y_all_daily.csv", y_all_daily)
     CSV.write("dataset/y_all_hourly.csv", y_all_hourly)
-    
-    # Plotting density plot
-    # p1 = @df X_all_daily density(
-    #     :Latitude,
-    #     title="Distribution of Latitude",
-    #     xlab = "Latitude",
-    #     ylab = "Distribution"
-    # )
-    # p2 = @df X_all_daily density(
-    #     :Longitude,
-    #     title="Distribution of Longitude",
-    #     xlab = "Longitude",
-    #     ylab = "Distribution"
-    # )
-    # p3 = @df X_all_daily density(
-    #     :Value1,
-    #     title="Distribution of Solar Irradiance",
-    #     xlab = "Solar Irradiance",
-    #     ylab = "Distribution"
-    # )
-    # p4 = @df X_all_daily plot(
-    #     :Value1,
-    #     title = "Solar Irradiance",
-    #     xlab = "Time",
-    #     ylab = "Solar Irradiance"
-    # )
-    # p5 = @df X_all_daily plot(
-    #     :MonthSin,
-    #     title = "Month sin feature",
-    #     xlab = "Time",
-    #     ylab = "Month sin"
-    # )
-    # p6 = @df X_all_daily plot(
-    #     :MonthCos,
-    #     title = "Month cos feature",
-    #     xlab = "Time",
-    #     ylab = "Month cos"
-    # )
-    # p7 = @df X_all_daily plot(
-    #     :DaySin,
-    #     title = "Day sin feature",
-    #     xlab = "Time",
-    #     ylab = "Day sin"
-    # )
-    # p8 = @df X_all_daily plot(
-    #     :DayCos,
-    #     title = "Day cos feature",
-    #     xlab = "Time",
-    #     ylab = "Day cos"
-    # )
-    # png(
-    #     plot(p1, p2, p3, p4, p5, p6, p7, p8, layout = (4, 2), legend = false, dpi = 600),  # , title = "Regional daily dataset"
-    #     "imgs/X_all_daily.png"
-    # )
-
-    # p9 = @df y_all_daily density(
-    #     :Latitude,
-    #     title="Distribution of Latitude",
-    #     xlab = "Latitude",
-    #     ylab = "Distribution"
-    # )
-    # p10 = @df y_all_daily density(
-    #     :Longitude,
-    #     title="Distribution of Longitude",
-    #     xlab = "Longitude",
-    #     ylab = "Distribution"
-    # )
-    # p11 = @df y_all_daily density(
-    #     :Irradiance,
-    #     title="Distribution of Solar Irradiance",
-    #     xlab = "Solar Irradiance",
-    #     ylab = "Distribution"
-    # )
-    # p12 = @df y_all_daily plot(
-    #     :Irradiance,
-    #     title = "Solar Irradiance",
-    #     xlab = "Time",
-    #     ylab = "Solar Irradiance"
-    # )    
-    # p13 = @df y_all_daily plot(
-    #     :MonthSin,
-    #     title = "Month sin feature",
-    #     xlab = "Time",
-    #     ylab = "Month sin"
-    # )
-    # p14 = @df y_all_daily plot(
-    #     :MonthCos,
-    #     title = "Month cos feature",
-    #     xlab = "Time",
-    #     ylab = "Month cos"
-    # )
-    # p15 = @df y_all_daily plot(
-    #     :DaySin,
-    #     title = "Day sin feature",
-    #     xlab = "Time",
-    #     ylab = "Day sin"
-    # )
-    # p16 = @df y_all_daily plot(
-    #     :DayCos,
-    #     title = "Day cos feature",
-    #     xlab = "Time",
-    #     ylab = "Day cos"
-    # )
-    # png(
-    #     plot(p9, p10, p11, p12, p13, p14, p15, p16, layout = (4, 2), legend = false, dpi = 600),   # , title = "Point daily dataset"
-    #     "imgs/y_all_daily.png"
-    # )
-
-    # p17 = @df y_all_hourly density(
-    #     :Latitude,
-    #     title="Distribution of Latitude",
-    #     xlab = "Latitude",
-    #     ylab = "Distribution"
-    # )
-    # p18 = @df y_all_hourly density(
-    #     :Longitude,
-    #     title="Distribution of Longitude",
-    #     xlab = "Longitude",
-    #     ylab = "Distribution"
-    # )
-    # p19 = @df y_all_hourly density(
-    #     :Irradiance,
-    #     title="Distribution of Solar Irradiance",
-    #     xlab = "Solar Irradiance",
-    #     ylab = "Distribution"
-    # )
-    # p20 = @df y_all_hourly plot(
-    #     :Irradiance,
-    #     title = "Solar Irradiance",
-    #     xlab = "Time",
-    #     ylab = "Solar Irradiance"
-    # )    
-    # p21 = @df y_all_hourly plot(
-    #     :MonthSin,
-    #     title = "Month sin feature",
-    #     xlab = "Time",
-    #     ylab = "Month sin"
-    # )
-    # p22 = @df y_all_hourly plot(
-    #     :MonthCos,
-    #     title = "Month cos feature",
-    #     xlab = "Time",
-    #     ylab = "Month cos"
-    # )
-    # p23 = @df y_all_hourly plot(
-    #     :DaySin,
-    #     title = "Day sin feature",
-    #     xlab = "Time",
-    #     ylab = "Day sin"
-    # )
-    # p24 = @df y_all_hourly plot(
-    #     :DayCos,
-    #     title = "Day cos feature",
-    #     xlab = "Time",
-    #     ylab = "Day cos"
-    # )
-    # p25 = @df y_all_hourly plot(
-    #     :HourSin,
-    #     title = "Hour sin feature",
-    #     xlab = "Time",
-    #     ylab = "Hour sin"
-    # )
-    # p26 = @df y_all_hourly plot(
-    #     :HourCos,
-    #     title = "Hour cos feature",
-    #     xlab = "Time",
-    #     ylab = "Hour cos"
-    # )
-    # png(
-    #     plot(p17, p18, p19, p20, p21, p22, p23, p24, p25, p26, layout = (5, 2), legend = false, dpi = 600),  # , title = "Point hourly dataset"
-    #     "imgs/y_all_hourly.png"
-    # )
 
     # Region Heatmap
-    data1 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data1_1 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data2_1 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data1_2 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data2_2 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data1_3 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data2_3 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data1_4 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data2_4 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data1_5 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data2_5 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data1_6 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data2_6 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data1_7 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
+    data2_7 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
     k = 1
-    for j::Int in 1:parsed_args["height"] * 2
-        for i::Int in 1:parsed_args["width"] * 2
-            data1[i, j] = cor(X_all_daily[!, "Value$(k)"], y_all_daily[!, "Irradiance"])
-            data2[i, j] = corspearman(X_all_daily[!, "Value$(k)"], y_all_daily[!, "Irradiance"])
+    for i::Int in 1:parsed_args["height"] * 2
+        for j::Int in 1:parsed_args["width"] * 2
+            data1_1[i, j] = cor(X_all_daily[!, "Irradiance$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data2_1[i, j] = corspearman(X_all_daily[!, "Irradiance$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data1_2[i, j] = cor(X_all_daily[!, "Temp$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data2_2[i, j] = corspearman(X_all_daily[!, "Temp$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data1_3[i, j] = cor(X_all_daily[!, "Humidity$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data2_3[i, j] = corspearman(X_all_daily[!, "Humidity$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data1_4[i, j] = cor(X_all_daily[!, "WindSpeed$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data2_4[i, j] = corspearman(X_all_daily[!, "WindSpeed$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data1_5[i, j] = cor(X_all_daily[!, "WindSpeedMax$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data2_5[i, j] = corspearman(X_all_daily[!, "WindSpeedMax$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data1_6[i, j] = cor(X_all_daily[!, "WindDirection$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data2_6[i, j] = corspearman(X_all_daily[!, "WindDirection$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data1_7[i, j] = cor(X_all_daily[!, "Pressure$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data2_7[i, j] = corspearman(X_all_daily[!, "Pressure$(k)"], y_all_daily[!, "Irradiance"]) * 100
             k = k + 1
         end
     end
-    png(
-        plot(
-            plot(heatmap(data1, clim=(0.0, 1.0)), title = "Pearson Correlation Region - Point", xlab = "Latitude", ylab = "Longitude", dpi = 600),        
-            plot(heatmap(data2, clim=(0.0, 1.0)), title = "Spearman Correlation Region - Point", xlab = "Latitude", ylab = "Longitude", dpi = 600),
-            layout = (2, 1),
-            legend = false,
-            dpi = 600
-        ),
-        "imgs/region.png"
-    )
+    
+    fig = Figure(resolution = (1000, 2000))
+    # ax1 = Axis(fig[1, 1], title = "Irradiance \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude",)
+    # ax2 = Axis(fig[1, 3], title = "Irradiance \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax3 = Axis(fig[2, 1], title = "Temperature \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax4 = Axis(fig[2, 3], title = "Temperature \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax5 = Axis(fig[3, 1], title = "Humidity \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax6 = Axis(fig[3, 3], title = "Humidity \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax7 = Axis(fig[4, 1], title = "Pressure \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax8 = Axis(fig[4, 3], title = "Pressure \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax9 = Axis(fig[5, 1], title = "Wind speed \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax10 = Axis(fig[5, 3], title = "Wind speed \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax11 = Axis(fig[6, 1], title = "Wind speed Max \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax12 = Axis(fig[6, 3], title = "Wind speed Max \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax13 = Axis(fig[7, 1], title = "Wind direction \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
+    # ax14 = Axis(fig[7, 3], title = "Wind direction \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
+
+    xs = LinRange(1, 5, 5)
+    ys = LinRange(1, 5, 5)
+    ax1, hm1 = heatmap(fig[1, 1], data1_1) #, c = :amp, dpi = 600)
+    ax1.title = "Irradiance \"Region - Point\" Pearson correlation"
+    ax1.xlabel = "Longitude"
+    ax1.ylabel = "Latitude"
+    ax2, hm2 = heatmap(fig[1, 3], data2_1) #, c = :amp, dpi = 600)
+    ax2.title = "Irradiance \"Region - Point\" Spearman correlation"
+    ax2.xlabel = "Longitude"
+    ax2.ylabel = "Latitude"
+    ax3, hm3 = heatmap(fig[2, 1], data1_2) #, c = :amp, dpi = 600)
+    ax3.title = "Temperature \"Region - Point\" Pearson correlation"
+    ax3.xlabel = "Longitude"
+    ax3.ylabel = "Latitude"
+    ax4, hm4 = heatmap(fig[2, 3], data2_2) #, c = :amp, dpi = 600)
+    ax4.title = "Temperature \"Region - Point\" Spearman correlation"
+    ax4.xlabel = "Longitude"
+    ax4.ylabel = "Latitude"
+    ax5, hm5 = heatmap(fig[3, 1], data1_3) #, c = :ice, dpi = 600)
+    ax5.title = "Humidity \"Region - Point\" Pearson correlation"
+    ax5.xlabel = "Longitude"
+    ax5.ylabel = "Latitude"
+    ax6, hm6 = heatmap(fig[3, 3], data2_3) #, c = :ice, dpi = 600)
+    ax6.title = "Humidity \"Region - Point\" Spearman correlation"
+    ax6.xlabel = "Longitude"
+    ax6.ylabel = "Latitude"
+    ax7, hm7 = heatmap(fig[4, 1], data1_4) #, c = :ice, dpi = 600)
+    ax7.title = "Pressure \"Region - Point\" Pearson correlation"
+    ax7.xlabel = "Longitude"
+    ax7.ylabel = "Latitude"
+    ax8, hm8 = heatmap(fig[4, 3], data2_4) #, c = :ice, dpi = 600)
+    ax8.title = "Pressure \"Region - Point\" Spearman correlation"
+    ax8.xlabel = "Longitude"
+    ax8.ylabel = "Latitude"
+    ax9, hm9 = heatmap(fig[5, 1], data1_5) #, c = :balance, dpi = 600)
+    ax9.title = "Wind speed \"Region - Point\" Pearson correlation"
+    ax9.xlabel = "Longitude"
+    ax9.ylabel = "Latitude"
+    ax10, hm10 = heatmap(fig[5, 3], data2_5) #, c = :balance, dpi = 600)
+    ax10.title = "Wind speed \"Region - Point\" Spearman correlation"
+    ax10.xlabel = "Longitude"
+    ax10.ylabel = "Latitude"
+    ax11, hm11 = heatmap(fig[6, 1], data1_6) #, c = :amp, dpi = 600)
+    ax11.title = "Wind speed Max \"Region - Point\" Pearson correlation"
+    ax11.xlabel = "Longitude"
+    ax11.ylabel = "Latitude"
+    ax12, hm12 = heatmap(fig[6, 3], data2_6) #, c = :amp, dpi = 600)
+    ax12.title = "Wind speed Max \"Region - Point\" Spearman correlation"
+    ax12.xlabel = "Longitude"
+    ax12.ylabel = "Latitude"
+    ax13, hm13 = heatmap(fig[7, 1], data1_7) #, c = :amp, dpi = 600)
+    ax13.title = "Wind direction \"Region - Point\" Pearson correlation"
+    ax13.xlabel = "Longitude"
+    ax13.ylabel = "Latitude"
+    ax14, hm14 = heatmap(fig[7, 3], data2_7) #, c = :amp, dpi = 600)
+    ax14.title = "Wind direction \"Region - Point\" Spearman correlation"
+    ax14.xlabel = "Longitude"
+    ax14.ylabel = "Latitude"
+
+    Colorbar(fig[1, 2], hm1, label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[1, 4], hm2,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[2, 2], hm3,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[2, 4], hm4,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[3, 2], hm5,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[3, 4], hm6,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[4, 2], hm7,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[4, 4], hm8,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[5, 2], hm9,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[5, 4], hm10,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[6, 2], hm11,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[6, 4], hm12,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[7, 2], hm13,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    Colorbar(fig[7, 4], hm14,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+
+    Wx = mean(Matrix(X_all_daily[!, ["WindX$(k)" for k in 1:25]]), dims=1)
+    Wy = mean(Matrix(X_all_daily[!, ["WindY$(k)" for k in 1:25]]), dims=1)
+    WxMax = mean(Matrix(X_all_daily[!, ["WindXMax$(k)" for k in 1:25]]), dims=1)
+    WyMax = mean(Matrix(X_all_daily[!, ["WindYMax$(k)" for k in 1:25]]), dims=1)
+
+    arrows!(fig[5, 1], xs, ys, Wx, Wy, arrowsize = 15, lengthscale = 0.25)
+    arrows!(fig[5, 3], xs, ys, Wx, Wy, arrowsize = 15, lengthscale = 0.25)
+    arrows!(fig[6, 1], xs, ys, WxMax, WyMax, arrowsize = 15, lengthscale = 0.25)
+    arrows!(fig[6, 3], xs, ys, WxMax, WyMax, arrowsize = 15, lengthscale = 0.25)
+    arrows!(fig[7, 1], xs, ys, Wx, Wy, arrowsize = 15, lengthscale = 0.25)
+    arrows!(fig[7, 3], xs, ys, Wx, Wy, arrowsize = 15, lengthscale = 0.25)
+
+    save("imgs/region.png", fig)
 end
 
+# check the num. of threads
+if Threads.nthreads() == 1
+    println("Warning: The number of threads is only 1. It is recommended to use at least 2 threads.")
+end
 
 @time main()
