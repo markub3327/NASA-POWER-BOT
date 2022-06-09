@@ -1,21 +1,9 @@
 target_locations:
-  Bhadla Solar Park:
-    location:
-      - 27.539669
-      - 71.915253
-    area: 57
-    power: 2245
   Target 1:
     location:
       - 23.25991
       - 77.41261
     permanent: true
-  Pavagada Solar Park:
-    location:
-      - 14.251944
-      - 77.4475
-    area: 53
-    power: 2050
   Solar Power Plant Khera Silajit:
     location:
       - 25.835157
@@ -34,12 +22,6 @@ target_locations:
     location:
       - 27.972365
       - 73.063411
-  Kamuthi Solar Power Project:
-    location:
-      - 9.347568
-      - 78.392162
-    area: 10
-    power: 648
   Charanka Solar Park:
     location:
       - 23.9
@@ -51,18 +33,18 @@ target_locations:
       - 21.059537
       - 74.375055
     power: 5
+  Welspun Solar MP project:
+    location:
+      - 24.6907
+      - 75.1347
+    area: 3
+    power: 151
   Rewa Ultra Mega Solar:
     location:
       - 24.480278
       - 81.574444
     area: 6.4
     power: 750
-  BOSCH Solar Power Plant:
-    location:
-      - 15.981156
-      - 74.998076
-    area: 0.364
-    power: 115
   Bitta Solar Power Plant:
     location:
       - 23.262778
@@ -75,31 +57,18 @@ target_locations:
       - 77.218347
     area: 0.0046
     power: 0.93
-  Kurnool Ultra Mega Solar Park:
-    location:
-      - 15.681522
-      - 78.283749
-    area: 24
-    power: 1000
   Chennai Metropolitan Area:
     location:
       - 13.083667
       - 80.268667
-  Mandsaur Solar Farm:
+  Adani Green Energy Tamilnadu Limited:
     location:
-      - 24.088056
-      - 75.799722
-    area: 1.1435
-    power: 250
+      - 9.332771
+      - 78.388731
   Solar power plant Koppal:
     location:
       - 15.552097
       - 76.430815
-  Dell India:
-    location:
-      - 12.978386
-      - 77.665749
-    power: 0.12
   Ctrls Data Center Mumbai:
     location:
       - 19.063336
