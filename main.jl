@@ -79,8 +79,8 @@ function main()
     df_regional_daily = [ DataFrame(
         DateTime = Date[],
         MonthSin = Float32[],
-        MonthCos = Float32[],
         DaySin = Float32[],
+        MonthCos = Float32[],
         DayCos = Float32[],
         Name = String[],
         Latitude = Float32[],
@@ -109,8 +109,8 @@ function main()
     df_point_daily = [ DataFrame(
         DateTime = Date[],
         MonthSin = Float32[],
-        MonthCos = Float32[],
         DaySin = Float32[],
+        MonthCos = Float32[],
         DayCos = Float32[],
         Name = String[],
         Latitude = Float32[],
@@ -120,10 +120,10 @@ function main()
     df_point_hourly = [ DataFrame(
         DateTime = DateTime[],
         MonthSin = Float32[],
-        MonthCos = Float32[],
         DaySin = Float32[],
-        DayCos = Float32[],
         HourSin = Float32[],
+        MonthCos = Float32[],
+        DayCos = Float32[],
         HourCos = Float32[],
         Name = String[],
         Latitude = Float32[],
@@ -217,8 +217,8 @@ function main()
                 push!(df_regional_daily[threadid()], [
                     t,
                     sinpi(month(t) / MONTH_PERIOD * 2),
-                    cospi(month(t) / MONTH_PERIOD * 2),
                     sinpi(dayofyear(t) / DAY_PERIOD * 2),
+                    cospi(month(t) / MONTH_PERIOD * 2),
                     cospi(dayofyear(t) / DAY_PERIOD * 2),
                     location_name,
                     point["location"][1], 
@@ -238,8 +238,8 @@ function main()
                 push!(df_point_daily[threadid()], [
                     t,
                     sinpi(month(t) / MONTH_PERIOD * 2),
-                    cospi(month(t) / MONTH_PERIOD * 2),
                     sinpi(dayofyear(t) / DAY_PERIOD * 2),
+                    cospi(month(t) / MONTH_PERIOD * 2),
                     cospi(dayofyear(t) / DAY_PERIOD * 2),
                     location_name,
                     point["location"][1],
@@ -260,10 +260,10 @@ function main()
                     push!(df_point_hourly[threadid()], [
                         t,
                         sinpi(month(t) / MONTH_PERIOD * 2),
-                        cospi(month(t) / MONTH_PERIOD * 2),
                         sinpi(dayofyear(t) / DAY_PERIOD * 2),
-                        cospi(dayofyear(t) / DAY_PERIOD * 2),
                         sinpi(hour(t) / HOUR_PERIOD * 2),
+                        cospi(month(t) / MONTH_PERIOD * 2),
+                        cospi(dayofyear(t) / DAY_PERIOD * 2),
                         cospi(hour(t) / HOUR_PERIOD * 2),
                         location_name,
                         point["location"][1],
@@ -286,21 +286,6 @@ function main()
     if !isnothing(fill_value_regional)
         for j::Int in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2
             X_all_daily = filter("Irradiance$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("Temp$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("TempMin$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("TempMax$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("Humidity$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("WindSpeed$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("WindSpeedMax$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("WindSpeedMin$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("WindDirection$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("WindX$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("WindY$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("WindXMin$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("WindYMin$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("WindXMax$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("WindYMax$(j)" => v -> v != fill_value_regional, X_all_daily)
-            X_all_daily = filter("Pressure$(j)" => v -> v != fill_value_regional, X_all_daily)
         end
     end
     if !isnothing(fill_value_point_daily)
@@ -351,48 +336,35 @@ function main()
     data1_10 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
     data2_10 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
     k = 1
+    X_all_daily_filtered = filter(:DateTime => d -> Dates.month(d) == 1, X_all_daily)
+    y_all_daily_filtered = filter(:DateTime => d -> Dates.month(d) == 1, y_all_daily)
     for i::Int in 1:parsed_args["height"] * 2
         for j::Int in 1:parsed_args["width"] * 2
-            data1_1[i, j] = cor(X_all_daily[!, "Irradiance$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data2_1[i, j] = corspearman(X_all_daily[!, "Irradiance$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data1_2[i, j] = cor(X_all_daily[!, "Temp$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data2_2[i, j] = corspearman(X_all_daily[!, "Temp$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data1_3[i, j] = cor(X_all_daily[!, "TempMin$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data2_3[i, j] = corspearman(X_all_daily[!, "TempMin$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data1_4[i, j] = cor(X_all_daily[!, "TempMax$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data2_4[i, j] = corspearman(X_all_daily[!, "TempMax$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data1_5[i, j] = cor(X_all_daily[!, "Humidity$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data2_5[i, j] = corspearman(X_all_daily[!, "Humidity$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data1_6[i, j] = cor(X_all_daily[!, "WindSpeed$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data2_6[i, j] = corspearman(X_all_daily[!, "WindSpeed$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data1_7[i, j] = cor(X_all_daily[!, "WindSpeedMin$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data2_7[i, j] = corspearman(X_all_daily[!, "WindSpeedMin$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data1_8[i, j] = cor(X_all_daily[!, "WindSpeedMax$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data2_8[i, j] = corspearman(X_all_daily[!, "WindSpeedMax$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data1_9[i, j] = cor(X_all_daily[!, "WindDirection$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data2_9[i, j] = corspearman(X_all_daily[!, "WindDirection$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data1_10[i, j] = cor(X_all_daily[!, "Pressure$(k)"], y_all_daily[!, "Irradiance"]) * 100
-            data2_10[i, j] = corspearman(X_all_daily[!, "Pressure$(k)"], y_all_daily[!, "Irradiance"]) * 100
+            data1_1[i, j] = cor(X_all_daily_filtered[!, "Irradiance$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data2_1[i, j] = corspearman(X_all_daily_filtered[!, "Irradiance$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data1_2[i, j] = cor(X_all_daily_filtered[!, "Temp$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data2_2[i, j] = corspearman(X_all_daily_filtered[!, "Temp$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data1_3[i, j] = cor(X_all_daily_filtered[!, "TempMin$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data2_3[i, j] = corspearman(X_all_daily_filtered[!, "TempMin$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data1_4[i, j] = cor(X_all_daily_filtered[!, "TempMax$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data2_4[i, j] = corspearman(X_all_daily_filtered[!, "TempMax$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data1_5[i, j] = cor(X_all_daily_filtered[!, "Humidity$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data2_5[i, j] = corspearman(X_all_daily_filtered[!, "Humidity$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data1_6[i, j] = cor(X_all_daily_filtered[!, "WindSpeed$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data2_6[i, j] = corspearman(X_all_daily_filtered[!, "WindSpeed$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data1_7[i, j] = cor(X_all_daily_filtered[!, "WindSpeedMin$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data2_7[i, j] = corspearman(X_all_daily_filtered[!, "WindSpeedMin$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data1_8[i, j] = cor(X_all_daily_filtered[!, "WindSpeedMax$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data2_8[i, j] = corspearman(X_all_daily_filtered[!, "WindSpeedMax$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data1_9[i, j] = cor(X_all_daily_filtered[!, "WindDirection$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data2_9[i, j] = corspearman(X_all_daily_filtered[!, "WindDirection$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data1_10[i, j] = cor(X_all_daily_filtered[!, "Pressure$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
+            data2_10[i, j] = corspearman(X_all_daily_filtered[!, "Pressure$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
             k = k + 1
         end
     end
     
     fig = Figure(resolution = (1000, 2000))
-    # ax1 = Axis(fig[1, 1], title = "Irradiance \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude",)
-    # ax2 = Axis(fig[1, 3], title = "Irradiance \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax3 = Axis(fig[2, 1], title = "Temperature \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax4 = Axis(fig[2, 3], title = "Temperature \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax5 = Axis(fig[3, 1], title = "Humidity \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax6 = Axis(fig[3, 3], title = "Humidity \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax7 = Axis(fig[4, 1], title = "Pressure \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax8 = Axis(fig[4, 3], title = "Pressure \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax9 = Axis(fig[5, 1], title = "Wind speed \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax10 = Axis(fig[5, 3], title = "Wind speed \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax11 = Axis(fig[6, 1], title = "Wind speed Max \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax12 = Axis(fig[6, 3], title = "Wind speed Max \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax13 = Axis(fig[7, 1], title = "Wind direction \"Region - Point\" Pearson correlation", xlabel = "Longitude", ylabel = "Latitude")
-    # ax14 = Axis(fig[7, 3], title = "Wind direction \"Region - Point\" Spearman correlation", xlabel = "Longitude", ylabel = "Latitude")
-
     xs = LinRange(1, 5, 5)
     ys = LinRange(1, 5, 5)
     ax1, hm1 = heatmap(fig[1, 1], data1_1) #, c = :amp, dpi = 600)
@@ -497,12 +469,12 @@ function main()
     Colorbar(fig[10, 2], hm19,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
     Colorbar(fig[10, 4], hm20,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
 
-    Wx = mean(Matrix(X_all_daily[!, ["WindX$(k)" for k in 1:25]]), dims=1)
-    Wy = mean(Matrix(X_all_daily[!, ["WindY$(k)" for k in 1:25]]), dims=1)
-    WxMin = mean(Matrix(X_all_daily[!, ["WindXMin$(k)" for k in 1:25]]), dims=1)
-    WyMin = mean(Matrix(X_all_daily[!, ["WindYMin$(k)" for k in 1:25]]), dims=1)
-    WxMax = mean(Matrix(X_all_daily[!, ["WindXMax$(k)" for k in 1:25]]), dims=1)
-    WyMax = mean(Matrix(X_all_daily[!, ["WindYMax$(k)" for k in 1:25]]), dims=1)
+    Wx = mean(Matrix(X_all_daily_filtered[!, ["WindX$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
+    Wy = mean(Matrix(X_all_daily_filtered[!, ["WindY$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
+    WxMin = mean(Matrix(X_all_daily_filtered[!, ["WindXMin$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
+    WyMin = mean(Matrix(X_all_daily_filtered[!, ["WindYMin$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
+    WxMax = mean(Matrix(X_all_daily_filtered[!, ["WindXMax$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
+    WyMax = mean(Matrix(X_all_daily_filtered[!, ["WindYMax$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
 
     arrows!(fig[7, 1], xs, ys, Wx, Wy, arrowsize = 15, lengthscale = 0.25)
     arrows!(fig[7, 3], xs, ys, Wx, Wy, arrowsize = 15, lengthscale = 0.25)

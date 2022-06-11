@@ -17,7 +17,7 @@ function download_regional(year, regional, mode, timeout=30)
         return j
     catch e
         # Too Many Requests
-        if (e.status == 429)
+        if (e.status == 429) || (typeof(e) == HTTP.TimeoutRequest.ReadTimeoutError) 
             sleep(5)
             # println("Retrying download ♻️")
             return download_regional(year, regional, mode, timeout)
@@ -40,7 +40,7 @@ function download_point(year, point, mode, timeout=30)
         return j
     catch e
         # Too Many Requests
-        if (e.status == 429)
+        if (e.status == 429) || (typeof(e) == HTTP.TimeoutRequest.ReadTimeoutError)
             sleep(5)
             # println("Retrying download ♻️")
             return download_point(year, point, mode, timeout)
