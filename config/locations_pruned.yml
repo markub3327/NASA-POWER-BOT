@@ -1,21 +1,9 @@
 target_locations:
-  Bhadla Solar Park:
-    location:
-      - 27.539669
-      - 71.915253
-    area: 57
-    power: 2245
   Target 1:
     location:
       - 23.25991
       - 77.41261
     permanent: true
-  Pavagada Solar Park:
-    location:
-      - 14.251944
-      - 77.4475
-    area: 53
-    power: 2050
   Solar Power Plant Khera Silajit:
     location:
       - 25.835157
@@ -30,6 +18,14 @@ target_locations:
       - 21.313376
       - 78.6013
     power: 54
+  Solar Power Plant Chandasar:
+    location:
+      - 27.972365
+      - 73.063411
+  Solar power plant Vankihal:
+    location:
+      - 16.520022
+      - 76.811548
   Charanka Solar Park:
     location:
       - 23.9
@@ -52,24 +48,21 @@ target_locations:
       - 24.480278
       - 81.574444
     area: 6.4
+    permanent: true
     power: 750
-  BOSCH Solar Power Plant:
-    location:
-      - 15.981156
-      - 74.998076
-    area: 0.364
-    power: 115
   Bitta Solar Power Plant:
     location:
       - 23.262778
       - 69.024167
     area: 1.4
+    permanent: true
     power: 40
   Indira Paryavaran Bhawan:
     location:
       - 28.585154
       - 77.218347
     area: 0.0046
+    permanent: true
     power: 0.93
   Chennai Metropolitan Area:
     location:
@@ -79,6 +72,11 @@ target_locations:
     location:
       - 9.332771
       - 78.388731
+    permanent: true
+  Arete Elena Energy Pvt Ltd:
+    location:
+      - 15.86184
+      - 74.909739
   Ctrls Data Center Mumbai:
     location:
       - 19.063336

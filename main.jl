@@ -2,15 +2,12 @@ include("./downloader.jl")
 include("./utils.jl")
 include("./menu.jl")
 
-using Statistics
-using StatsBase
 using Base.Threads
 using Dates
 using DataFrames
 using CSV
 using YAML
 using ProgressMeter
-using CairoMakie
 
 # Constants
 const MONTH_PERIOD = 12
@@ -179,12 +176,12 @@ function main()
                         push!(X[time], wd[2])       # copying
 
                         wd_rad = deg2rad(wd[2])
-                        push!(X[time], ws[2]*cos(wd_rad - (pi/2)))       # copying
-                        push!(X[time], ws[2]*sin(wd_rad - (pi/2)))       # copying
-                        push!(X[time], ws_min[2]*cos(wd_rad - (pi/2)))   # copying
-                        push!(X[time], ws_min[2]*sin(wd_rad - (pi/2)))   # copying
-                        push!(X[time], ws_max[2]*cos(wd_rad - (pi/2)))   # copying
-                        push!(X[time], ws_max[2]*sin(wd_rad - (pi/2)))   # copying
+                        push!(X[time], ws[2]*cos(wd_rad))       # copying
+                        push!(X[time], ws[2]*sin(wd_rad))       # copying
+                        push!(X[time], ws_min[2]*cos(wd_rad))   # copying
+                        push!(X[time], ws_min[2]*sin(wd_rad))   # copying
+                        push!(X[time], ws_max[2]*cos(wd_rad))   # copying
+                        push!(X[time], ws_max[2]*sin(wd_rad))   # copying
 
                         push!(X[time], p[2])        # copying
                     else
@@ -199,12 +196,12 @@ function main()
                             ws_min[2],  
                             ws_max[2],  
                             wd[2],
-                            ws[2]*cos(wd_rad - (pi/2)),
-                            ws[2]*sin(wd_rad - (pi/2)),
-                            ws_min[2]*cos(wd_rad - (pi/2)),
-                            ws_min[2]*sin(wd_rad - (pi/2)),
-                            ws_max[2]*cos(wd_rad - (pi/2)),
-                            ws_max[2]*sin(wd_rad - (pi/2)),
+                            ws[2]*cos(wd_rad),
+                            ws[2]*sin(wd_rad),
+                            ws_min[2]*cos(wd_rad),
+                            ws_min[2]*sin(wd_rad),
+                            ws_max[2]*cos(wd_rad),
+                            ws_max[2]*sin(wd_rad),
                             p[2]
                         ]            # creating
                     end
@@ -314,178 +311,27 @@ function main()
     CSV.write("dataset/y_all_daily.csv", y_all_daily)
     CSV.write("dataset/y_all_hourly.csv", y_all_hourly)
 
-    # Region Heatmap
-    data1_1 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2_1 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data1_2 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2_2 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data1_3 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2_3 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data1_4 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2_4 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data1_5 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2_5 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data1_6 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2_6 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data1_7 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2_7 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data1_8 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2_8 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data1_9 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2_9 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data1_10 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    data2_10 = Array{Float32}(undef, round(Int, parsed_args["height"] * 2), round(Int, parsed_args["width"] * 2))
-    k = 1
-    X_all_daily_filtered = filter(:DateTime => d -> Dates.month(d) == 1, X_all_daily)
-    y_all_daily_filtered = filter(:DateTime => d -> Dates.month(d) == 1, y_all_daily)
-    for i::Int in 1:parsed_args["height"] * 2
-        for j::Int in 1:parsed_args["width"] * 2
-            data1_1[i, j] = cor(X_all_daily_filtered[!, "Irradiance$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data2_1[i, j] = corspearman(X_all_daily_filtered[!, "Irradiance$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data1_2[i, j] = cor(X_all_daily_filtered[!, "Temp$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data2_2[i, j] = corspearman(X_all_daily_filtered[!, "Temp$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data1_3[i, j] = cor(X_all_daily_filtered[!, "TempMin$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data2_3[i, j] = corspearman(X_all_daily_filtered[!, "TempMin$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data1_4[i, j] = cor(X_all_daily_filtered[!, "TempMax$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data2_4[i, j] = corspearman(X_all_daily_filtered[!, "TempMax$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data1_5[i, j] = cor(X_all_daily_filtered[!, "Humidity$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data2_5[i, j] = corspearman(X_all_daily_filtered[!, "Humidity$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data1_6[i, j] = cor(X_all_daily_filtered[!, "WindSpeed$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data2_6[i, j] = corspearman(X_all_daily_filtered[!, "WindSpeed$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data1_7[i, j] = cor(X_all_daily_filtered[!, "WindSpeedMin$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data2_7[i, j] = corspearman(X_all_daily_filtered[!, "WindSpeedMin$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data1_8[i, j] = cor(X_all_daily_filtered[!, "WindSpeedMax$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data2_8[i, j] = corspearman(X_all_daily_filtered[!, "WindSpeedMax$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data1_9[i, j] = cor(X_all_daily_filtered[!, "WindDirection$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data2_9[i, j] = corspearman(X_all_daily_filtered[!, "WindDirection$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data1_10[i, j] = cor(X_all_daily_filtered[!, "Pressure$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            data2_10[i, j] = corspearman(X_all_daily_filtered[!, "Pressure$(k)"], y_all_daily_filtered[!, "Irradiance"]) * 100
-            k = k + 1
-        end
-    end
-    
-    fig = Figure(resolution = (1000, 2000))
-    xs = LinRange(1, 5, 5)
-    ys = LinRange(1, 5, 5)
-    ax1, hm1 = heatmap(fig[1, 1], data1_1) #, c = :amp, dpi = 600)
-    ax1.title = "Irradiance \"Region - Point\" Pearson correlation"
-    ax1.xlabel = "Longitude"
-    ax1.ylabel = "Latitude"
-    ax2, hm2 = heatmap(fig[1, 3], data2_1) #, c = :amp, dpi = 600)
-    ax2.title = "Irradiance \"Region - Point\" Spearman correlation"
-    ax2.xlabel = "Longitude"
-    ax2.ylabel = "Latitude"
-    ax3, hm3 = heatmap(fig[2, 1], data1_2) #, c = :amp, dpi = 600)
-    ax3.title = "Temperature \"Region - Point\" Pearson correlation"
-    ax3.xlabel = "Longitude"
-    ax3.ylabel = "Latitude"
-    ax4, hm4 = heatmap(fig[2, 3], data2_2) #, c = :amp, dpi = 600)
-    ax4.title = "Temperature \"Region - Point\" Spearman correlation"
-    ax4.xlabel = "Longitude"
-    ax4.ylabel = "Latitude"
-    ax5, hm5 = heatmap(fig[3, 1], data1_3) #, c = :amp, dpi = 600)
-    ax5.title = "Temperature Min \"Region - Point\" Pearson correlation"
-    ax5.xlabel = "Longitude"
-    ax5.ylabel = "Latitude"
-    ax6, hm6 = heatmap(fig[3, 3], data2_3) #, c = :amp, dpi = 600)
-    ax6.title = "Temperature Min \"Region - Point\" Spearman correlation"
-    ax6.xlabel = "Longitude"
-    ax6.ylabel = "Latitude"
-    ax7, hm7 = heatmap(fig[4, 1], data1_4) #, c = :amp, dpi = 600)
-    ax7.title = "Temperature Max \"Region - Point\" Pearson correlation"
-    ax7.xlabel = "Longitude"
-    ax7.ylabel = "Latitude"
-    ax8, hm8 = heatmap(fig[4, 3], data2_4) #, c = :amp, dpi = 600)
-    ax8.title = "Temperature Max \"Region - Point\" Spearman correlation"
-    ax8.xlabel = "Longitude"
-    ax8.ylabel = "Latitude"
-    ax9, hm9 = heatmap(fig[5, 1], data1_5) #, c = :ice, dpi = 600)
-    ax9.title = "Humidity \"Region - Point\" Pearson correlation"
-    ax9.xlabel = "Longitude"
-    ax9.ylabel = "Latitude"
-    ax10, hm10 = heatmap(fig[5, 3], data2_5) #, c = :ice, dpi = 600)
-    ax10.title = "Humidity \"Region - Point\" Spearman correlation"
-    ax10.xlabel = "Longitude"
-    ax10.ylabel = "Latitude"
-    ax11, hm11 = heatmap(fig[6, 1], data1_10) #, c = :ice, dpi = 600)
-    ax11.title = "Pressure \"Region - Point\" Pearson correlation"
-    ax11.xlabel = "Longitude"
-    ax11.ylabel = "Latitude"
-    ax12, hm12 = heatmap(fig[6, 3], data2_10) #, c = :ice, dpi = 600)
-    ax12.title = "Pressure \"Region - Point\" Spearman correlation"
-    ax12.xlabel = "Longitude"
-    ax12.ylabel = "Latitude"
-    ax13, hm13 = heatmap(fig[7, 1], data1_6) #, c = :balance, dpi = 600)
-    ax13.title = "Wind speed \"Region - Point\" Pearson correlation"
-    ax13.xlabel = "Longitude"
-    ax13.ylabel = "Latitude"
-    ax14, hm14 = heatmap(fig[7, 3], data2_6) #, c = :balance, dpi = 600)
-    ax14.title = "Wind speed \"Region - Point\" Spearman correlation"
-    ax14.xlabel = "Longitude"
-    ax14.ylabel = "Latitude"
-    ax15, hm15 = heatmap(fig[8, 1], data1_7) #, c = :amp, dpi = 600)
-    ax15.title = "Wind speed Min \"Region - Point\" Pearson correlation"
-    ax15.xlabel = "Longitude"
-    ax15.ylabel = "Latitude"
-    ax16, hm16 = heatmap(fig[8, 3], data2_7) #, c = :amp, dpi = 600)
-    ax16.title = "Wind speed Min \"Region - Point\" Spearman correlation"
-    ax16.xlabel = "Longitude"
-    ax16.ylabel = "Latitude"
-    ax17, hm17 = heatmap(fig[9, 1], data1_8) #, c = :amp, dpi = 600)
-    ax17.title = "Wind speed Max \"Region - Point\" Pearson correlation"
-    ax17.xlabel = "Longitude"
-    ax17.ylabel = "Latitude"
-    ax18, hm18 = heatmap(fig[9, 3], data2_8) #, c = :amp, dpi = 600)
-    ax18.title = "Wind speed Max \"Region - Point\" Spearman correlation"
-    ax18.xlabel = "Longitude"
-    ax18.ylabel = "Latitude"
-    ax19, hm19 = heatmap(fig[10, 1], data1_9) #, c = :amp, dpi = 600)
-    ax19.title = "Wind direction \"Region - Point\" Pearson correlation"
-    ax19.xlabel = "Longitude"
-    ax19.ylabel = "Latitude"
-    ax20, hm20 = heatmap(fig[10, 3], data2_9) #, c = :amp, dpi = 600)
-    ax20.title = "Wind direction \"Region - Point\" Spearman correlation"
-    ax20.xlabel = "Longitude"
-    ax20.ylabel = "Latitude"
+    # Filter
+    X_filtered = filter(:Name => n -> n == "Bitta Solar Power Plant", filter(:DateTime => d -> Dates.month(d) == 8, X_all_daily))
+    Y_filtered = filter(:Name => n -> n == "Rewa Ultra Mega Solar", filter(:DateTime => d -> Dates.month(d) == 8, y_all_daily))
+    # north - south
+    # Indira Paryavaran Bhawan
+    # Adani Green Energy Tamilnadu Limited
 
-    Colorbar(fig[1, 2], hm1, label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[1, 4], hm2,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[2, 2], hm3,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[2, 4], hm4,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[3, 2], hm5,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[3, 4], hm6,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[4, 2], hm7,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[4, 4], hm8,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[5, 2], hm9,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[5, 4], hm10,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[6, 2], hm11,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[6, 4], hm12,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[7, 2], hm13,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[7, 4], hm14,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[8, 2], hm15,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[8, 4], hm16,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[9, 2], hm17,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[9, 4], hm18,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[10, 2], hm19,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
-    Colorbar(fig[10, 4], hm20,  label="Percent [%]", flipaxis = false) #  limits = (0, 10)
+    # west - east
+    # Bitta Solar Power Plant
+    # Rewa Ultra Mega Solar
 
-    Wx = mean(Matrix(X_all_daily_filtered[!, ["WindX$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
-    Wy = mean(Matrix(X_all_daily_filtered[!, ["WindY$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
-    WxMin = mean(Matrix(X_all_daily_filtered[!, ["WindXMin$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
-    WyMin = mean(Matrix(X_all_daily_filtered[!, ["WindYMin$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
-    WxMax = mean(Matrix(X_all_daily_filtered[!, ["WindXMax$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
-    WyMax = mean(Matrix(X_all_daily_filtered[!, ["WindYMax$(k)" for k in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2]]), dims=1)
-
-    arrows!(fig[7, 1], xs, ys, Wx, Wy, arrowsize = 15, lengthscale = 0.25)
-    arrows!(fig[7, 3], xs, ys, Wx, Wy, arrowsize = 15, lengthscale = 0.25)
-    arrows!(fig[8, 1], xs, ys, WxMin, WyMin, arrowsize = 15, lengthscale = 0.25)
-    arrows!(fig[8, 3], xs, ys, WxMin, WyMin, arrowsize = 15, lengthscale = 0.25)
-    arrows!(fig[9, 1], xs, ys, WxMax, WyMax, arrowsize = 15, lengthscale = 0.25)
-    arrows!(fig[9, 3], xs, ys, WxMax, WyMax, arrowsize = 15, lengthscale = 0.25)
-    arrows!(fig[10, 1], xs, ys, Wx, Wy, arrowsize = 15, lengthscale = 0.25)
-    arrows!(fig[10, 3], xs, ys, Wx, Wy, arrowsize = 15, lengthscale = 0.25)
-
-    save("imgs/region.png", fig)
+    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "Irradiance")
+    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "Temp")
+    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "TempMin")
+    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "TempMax")
+    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "Humidity")
+    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "WindSpeed", windDir = true)
+    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "WindSpeedMin", windDir = true)
+    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "WindSpeedMax", windDir = true)
+    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "WindDirection", windDir = true)
+    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "Pressure")
 end
 
 # check the num. of threads
