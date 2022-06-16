@@ -311,6 +311,9 @@ function main()
     # Filter
     X_filtered = filter(:Name => n -> n == "Adani Green Energy Tamilnadu Limited", filter(:DateTime => d -> Dates.month(d) == 11, X_all_daily))
     Y_filtered = filter(:Name => n -> n == "Indira Paryavaran Bhawan", filter(:DateTime => d -> Dates.month(d) == 11, y_all_daily))
+    # center
+    # Target 1
+
     # north - south
     # Indira Paryavaran Bhawan
     # Adani Green Energy Tamilnadu Limited
