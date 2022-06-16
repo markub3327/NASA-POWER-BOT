@@ -174,18 +174,15 @@ function main()
                         push!(X[time], ws_min[2])   # copying
                         push!(X[time], ws_max[2])   # copying
                         push!(X[time], wd[2])       # copying
-
-                        wd_rad = deg2rad(wd[2])
-                        push!(X[time], ws[2]*cos(wd_rad))       # copying
-                        push!(X[time], ws[2]*sin(wd_rad))       # copying
-                        push!(X[time], ws_min[2]*cos(wd_rad))   # copying
-                        push!(X[time], ws_min[2]*sin(wd_rad))   # copying
-                        push!(X[time], ws_max[2]*cos(wd_rad))   # copying
-                        push!(X[time], ws_max[2]*sin(wd_rad))   # copying
+                        push!(X[time], ws[2]*cosd(wd[2]))       # copying
+                        push!(X[time], ws[2]*sind(wd[2]))       # copying
+                        push!(X[time], ws_min[2]*cosd(wd[2]))   # copying
+                        push!(X[time], ws_min[2]*sind(wd[2]))   # copying
+                        push!(X[time], ws_max[2]*cosd(wd[2]))   # copying
+                        push!(X[time], ws_max[2]*sind(wd[2]))   # copying
 
                         push!(X[time], p[2])        # copying
                     else
-                        wd_rad = deg2rad(wd[2])
                         X[time] = [
                             i[2], 
                             t[2],
@@ -196,12 +193,12 @@ function main()
                             ws_min[2],  
                             ws_max[2],  
                             wd[2],
-                            ws[2]*cos(wd_rad),
-                            ws[2]*sin(wd_rad),
-                            ws_min[2]*cos(wd_rad),
-                            ws_min[2]*sin(wd_rad),
-                            ws_max[2]*cos(wd_rad),
-                            ws_max[2]*sin(wd_rad),
+                            ws[2]*cosd(wd[2]),
+                            ws[2]*sind(wd[2]),
+                            ws_min[2]*cosd(wd[2]),
+                            ws_min[2]*sind(wd[2]),
+                            ws_max[2]*cosd(wd[2]),
+                            ws_max[2]*sind(wd[2]),
                             p[2]
                         ]            # creating
                     end
