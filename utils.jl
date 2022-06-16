@@ -71,7 +71,7 @@ module  Utils
             end
         end
 
-        println(hm.colorrange[][1], ", ", hm.colorrange[][2])
+        #println(hm.colorrange[][1], ", ", hm.colorrange[][2])
     end
 
     function create_heatmap(X, Y, width, height, colName; windDir = false)

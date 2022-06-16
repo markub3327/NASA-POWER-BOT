@@ -75,13 +75,13 @@ function main()
     # Temporal dataset per thread
     df_regional_daily = [ DataFrame(
         DateTime = Date[],
+        Name = String[],
+        Latitude = Float32[],
+        Longitude = Float32[],
         MonthSin = Float32[],
         DaySin = Float32[],
         MonthCos = Float32[],
-        DayCos = Float32[],
-        Name = String[],
-        Latitude = Float32[],
-        Longitude = Float32[]
+        DayCos = Float32[]
     ) for _ in 1:nthreads()]
     for i in 1:nthreads()
         for j::Int in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2
@@ -105,26 +105,26 @@ function main()
     end
     df_point_daily = [ DataFrame(
         DateTime = Date[],
+        Name = String[],
+        Latitude = Float32[],
+        Longitude = Float32[], 
         MonthSin = Float32[],
         DaySin = Float32[],
         MonthCos = Float32[],
         DayCos = Float32[],
-        Name = String[],
-        Latitude = Float32[],
-        Longitude = Float32[], 
         Irradiance = Float32[]
     ) for _ in 1:nthreads()]
     df_point_hourly = [ DataFrame(
         DateTime = DateTime[],
+        Name = String[],
+        Latitude = Float32[],
+        Longitude = Float32[],
         MonthSin = Float32[],
         DaySin = Float32[],
         HourSin = Float32[],
         MonthCos = Float32[],
         DayCos = Float32[],
         HourCos = Float32[],
-        Name = String[],
-        Latitude = Float32[],
-        Longitude = Float32[],
         Irradiance = Float32[]
     ) for _ in 1:nthreads()]
 
@@ -210,13 +210,13 @@ function main()
                 t = Date(t, "yyyymmdd")
                 push!(df_regional_daily[threadid()], [
                     t,
+                    location_name,
+                    point["location"][1], 
+                    point["location"][2],
                     sinpi(month(t) / MONTH_PERIOD * 2),
                     sinpi(dayofyear(t) / DAY_PERIOD * 2),
                     cospi(month(t) / MONTH_PERIOD * 2),
                     cospi(dayofyear(t) / DAY_PERIOD * 2),
-                    location_name,
-                    point["location"][1], 
-                    point["location"][2],
                     value...
                 ])
             end
@@ -231,13 +231,13 @@ function main()
                 t = Date(t, "yyyymmdd")
                 push!(df_point_daily[threadid()], [
                     t,
+                    location_name,
+                    point["location"][1],
+                    point["location"][2],
                     sinpi(month(t) / MONTH_PERIOD * 2),
                     sinpi(dayofyear(t) / DAY_PERIOD * 2),
                     cospi(month(t) / MONTH_PERIOD * 2),
                     cospi(dayofyear(t) / DAY_PERIOD * 2),
-                    location_name,
-                    point["location"][1],
-                    point["location"][2],
                     value
                 ])
             end
@@ -253,15 +253,15 @@ function main()
                     t = DateTime(t, "yyyymmddHH")
                     push!(df_point_hourly[threadid()], [
                         t,
+                        location_name,
+                        point["location"][1],
+                        point["location"][2],
                         sinpi(month(t) / MONTH_PERIOD * 2),
                         sinpi(dayofyear(t) / DAY_PERIOD * 2),
                         sinpi(hour(t) / HOUR_PERIOD * 2),
                         cospi(month(t) / MONTH_PERIOD * 2),
                         cospi(dayofyear(t) / DAY_PERIOD * 2),
                         cospi(hour(t) / HOUR_PERIOD * 2),
-                        location_name,
-                        point["location"][1],
-                        point["location"][2],
                         value
                     ])
                 end
