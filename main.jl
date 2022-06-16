@@ -312,8 +312,8 @@ function main()
     CSV.write("dataset/y_all_hourly.csv", y_all_hourly)
 
     # Filter
-    X_filtered = filter(:Name => n -> n == "Bitta Solar Power Plant", filter(:DateTime => d -> Dates.month(d) == 8, X_all_daily))
-    Y_filtered = filter(:Name => n -> n == "Rewa Ultra Mega Solar", filter(:DateTime => d -> Dates.month(d) == 8, y_all_daily))
+    X_filtered = filter(:Name => n -> n == "Adani Green Energy Tamilnadu Limited", filter(:DateTime => d -> Dates.month(d) == 11, X_all_daily))
+    Y_filtered = filter(:Name => n -> n == "Indira Paryavaran Bhawan", filter(:DateTime => d -> Dates.month(d) == 11, y_all_daily))
     # north - south
     # Indira Paryavaran Bhawan
     # Adani Green Energy Tamilnadu Limited
