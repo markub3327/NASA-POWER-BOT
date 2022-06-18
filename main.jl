@@ -9,10 +9,6 @@ using CSV
 using YAML
 using ProgressMeter
 
-# Constants
-const MONTH_PERIOD = 12
-const HOUR_PERIOD = 24
-
 function main()
     fill_value_regional, fill_value_point_daily, fill_value_point_hourly  = nothing, nothing, nothing
     parsed_args = Menu.main_menu()
@@ -78,10 +74,8 @@ function main()
         Name = String[],
         Latitude = Float32[],
         Longitude = Float32[],
-        MonthSin = Float32[],
-        DaySin = Float32[],
-        MonthCos = Float32[],
-        DayCos = Float32[]
+        Month = Int32[],
+        Day = Int32[],
     ) for _ in 1:nthreads()]
     for i in 1:nthreads()
         for j::Int in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2
@@ -107,11 +101,9 @@ function main()
         DateTime = Date[],
         Name = String[],
         Latitude = Float32[],
-        Longitude = Float32[], 
-        MonthSin = Float32[],
-        DaySin = Float32[],
-        MonthCos = Float32[],
-        DayCos = Float32[],
+        Longitude = Float32[],
+        Month = Int32[],
+        Day = Int32[],
         Irradiance = Float32[]
     ) for _ in 1:nthreads()]
     df_point_hourly = [ DataFrame(
@@ -119,12 +111,9 @@ function main()
         Name = String[],
         Latitude = Float32[],
         Longitude = Float32[],
-        MonthSin = Float32[],
-        DaySin = Float32[],
-        HourSin = Float32[],
-        MonthCos = Float32[],
-        DayCos = Float32[],
-        HourCos = Float32[],
+        Month = Int32[],
+        Day = Int32[],
+        Hour = Int32[],
         Irradiance = Float32[]
     ) for _ in 1:nthreads()]
 
@@ -140,8 +129,6 @@ function main()
 
     # Downloading data
     @threads :dynamic for year in parsed_args["start"]:parsed_args["end"]
-        DAY_PERIOD = Dates.daysinyear(year)
-
         # Region - daily
         for (location_name, point) in locations["target_locations"]
             data_regional = NASAPowerDownloader.download_regional(year, Utils.get_area(point["location"], parsed_args["width"], parsed_args["height"]), "daily", parsed_args["timeout"])
@@ -211,12 +198,10 @@ function main()
                 push!(df_regional_daily[threadid()], [
                     t,
                     location_name,
-                    point["location"][1], 
+                    point["location"][1],
                     point["location"][2],
-                    sinpi(month(t) / MONTH_PERIOD * 2),
-                    sinpi(dayofyear(t) / DAY_PERIOD * 2),
-                    cospi(month(t) / MONTH_PERIOD * 2),
-                    cospi(dayofyear(t) / DAY_PERIOD * 2),
+                    month(t),
+                    dayofyear(t),
                     value...
                 ])
             end
@@ -234,10 +219,8 @@ function main()
                     location_name,
                     point["location"][1],
                     point["location"][2],
-                    sinpi(month(t) / MONTH_PERIOD * 2),
-                    sinpi(dayofyear(t) / DAY_PERIOD * 2),
-                    cospi(month(t) / MONTH_PERIOD * 2),
-                    cospi(dayofyear(t) / DAY_PERIOD * 2),
+                    month(t),
+                    dayofyear(t),
                     value
                 ])
             end
@@ -256,12 +239,9 @@ function main()
                         location_name,
                         point["location"][1],
                         point["location"][2],
-                        sinpi(month(t) / MONTH_PERIOD * 2),
-                        sinpi(dayofyear(t) / DAY_PERIOD * 2),
-                        sinpi(hour(t) / HOUR_PERIOD * 2),
-                        cospi(month(t) / MONTH_PERIOD * 2),
-                        cospi(dayofyear(t) / DAY_PERIOD * 2),
-                        cospi(hour(t) / HOUR_PERIOD * 2),
+                        month(t),
+                        dayofyear(t),
+                        hour(t),
                         value
                     ])
                 end
