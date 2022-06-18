@@ -77,10 +77,10 @@ target_locations:
       - 9.332771
       - 78.388731
     permanent: true
-  Arete Elena Energy Pvt Ltd:
+  Solar power plant Devankatti:
     location:
-      - 15.86184
-      - 74.909739
+      - 16.373889
+      - 74.774039
   Ctrls Data Center Mumbai:
     location:
       - 19.063336
