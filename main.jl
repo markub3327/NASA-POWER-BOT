@@ -74,7 +74,6 @@ function main()
         Name = String[],
         Latitude = Float32[],
         Longitude = Float32[],
-        Month = Int32[],
         Day = Int32[],
     ) for _ in 1:nthreads()]
     for i in 1:nthreads()
@@ -102,7 +101,6 @@ function main()
         Name = String[],
         Latitude = Float32[],
         Longitude = Float32[],
-        Month = Int32[],
         Day = Int32[],
         Irradiance = Float32[]
     ) for _ in 1:nthreads()]
@@ -111,7 +109,6 @@ function main()
         Name = String[],
         Latitude = Float32[],
         Longitude = Float32[],
-        Month = Int32[],
         Day = Int32[],
         Hour = Int32[],
         Irradiance = Float32[]
@@ -200,7 +197,6 @@ function main()
                     location_name,
                     point["location"][1],
                     point["location"][2],
-                    month(t),
                     dayofyear(t),
                     value...
                 ])
@@ -219,7 +215,6 @@ function main()
                     location_name,
                     point["location"][1],
                     point["location"][2],
-                    month(t),
                     dayofyear(t),
                     value
                 ])
@@ -239,7 +234,6 @@ function main()
                         location_name,
                         point["location"][1],
                         point["location"][2],
-                        month(t),
                         dayofyear(t),
                         hour(t),
                         value

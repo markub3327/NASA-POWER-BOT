@@ -30,6 +30,10 @@ target_locations:
       - 21.313376
       - 78.6013
     power: 54
+  Solar power plant Vankihal:
+    location:
+      - 16.520022
+      - 76.811548
   Charanka Solar Park:
     location:
       - 23.9
@@ -77,10 +81,11 @@ target_locations:
       - 9.332771
       - 78.388731
     permanent: true
-  Solar power plant Devankatti:
+  Urja Solar Power Plant:
     location:
-      - 16.373889
-      - 74.774039
+      - 15.928395
+      - 74.529302
+    power: 0.5
   Ctrls Data Center Mumbai:
     location:
       - 19.063336
