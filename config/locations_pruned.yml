@@ -1,10 +1,4 @@
 target_locations:
-  Bhadla Solar Park:
-    location:
-      - 27.539669
-      - 71.915253
-    area: 57
-    power: 2245
   Target 1:
     location:
       - 23.25991
@@ -30,10 +24,10 @@ target_locations:
       - 21.313376
       - 78.6013
     power: 54
-  Solar power plant Vankihal:
+  Solar Power Plant Chandasar:
     location:
-      - 16.520022
-      - 76.811548
+      - 27.972365
+      - 73.063411
   Charanka Solar Park:
     location:
       - 23.9
@@ -65,6 +59,12 @@ target_locations:
     area: 1.4
     permanent: true
     power: 40
+  Karnataka I solar power plant:
+    location:
+      - 15.651944
+      - 75.9925
+    area: 0.72
+    power: 40.5
   Indira Paryavaran Bhawan:
     location:
       - 28.585154
@@ -72,6 +72,12 @@ target_locations:
     area: 0.0046
     permanent: true
     power: 0.93
+  Kurnool Ultra Mega Solar Park:
+    location:
+      - 15.681522
+      - 78.283749
+    area: 24
+    power: 1000
   Chennai Metropolitan Area:
     location:
       - 13.083667

@@ -24,7 +24,7 @@ function main()
 
                 # Choose one of two locations to keep by it's power or area if defined.
                 # The last option is random selection.
-                if iou > 0.1
+                if iou > 0.25
                     println("Point A: $(location_name_A)")
                     println("Point B: $(location_name_B)")
                     println("IoU: $(iou)")
