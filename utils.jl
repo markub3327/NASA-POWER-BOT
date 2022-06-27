@@ -75,35 +75,20 @@ module  Utils
     end
 
     function create_heatmap(X, Y, width, height, colName; windDir = false)
-        data1 = Array{Float32}(undef, width, height)
-        data2 = Array{Float32}(undef, width, height)
-        data3 = Array{Float32}(undef, width, height)
+        data = Array{Float32}(undef, width, height)
 
         k = 1
         for j::Int in 1:height
             for i::Int in 1:width
-                data1[i, j] = cor(X[!, "$(colName)$(k)"], Y[!, "Irradiance"]) * 100
-                data2[i, j] = corspearman(X[!, "$(colName)$(k)"], Y[!, "Irradiance"]) * 100
-                data3[i, j] = dcor(X[!, "$(colName)$(k)"], Y[!, "Irradiance"]) * 100
+                data[i, j] = dcor(X[!, "$(colName)$(k)"], Y[!, "Irradiance"]) * 100
                 k = k + 1
             end
         end
 
         fig = Figure(resolution = (1720, 600))
 
-        ax1, hm1 = heatmap(fig[1, 1], data1)
-        ax1.title = "$(colName) - Pearson correlation"
-        ax1.xlabel = "Longitude"
-        ax1.ylabel = "Latitude"
-        set_colormap!(hm1)
-        Colorbar(fig[1, 2], hm1, label="Percent [%]")
-        ax2, hm2 = heatmap(fig[1, 3], data2)
-        ax2.title = "$(colName) - Spearman correlation"
-        ax2.xlabel = "Longitude"
-        ax2.ylabel = "Latitude"
-        set_colormap!(hm2)
         Colorbar(fig[1, 4], hm2, label="Percent [%]")
-        ax3, hm3 = heatmap(fig[1, 5], data3)
+        ax3, hm3 = heatmap(fig[1, 5], data)
         ax3.title = "$(colName) - Distance correlation"
         ax3.xlabel = "Longitude"
         ax3.ylabel = "Latitude"
