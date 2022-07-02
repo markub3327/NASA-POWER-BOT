@@ -164,7 +164,6 @@ function main()
                         push!(X[time], ws_min[2]*sind(wd[2]))   # copying
                         push!(X[time], ws_max[2]*cosd(wd[2]))   # copying
                         push!(X[time], ws_max[2]*sind(wd[2]))   # copying
-
                         push!(X[time], p[2])        # copying
                     else
                         X[time] = [

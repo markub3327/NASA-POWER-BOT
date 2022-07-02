@@ -59,12 +59,11 @@ target_locations:
     area: 1.4
     permanent: true
     power: 40
-  Karnataka I solar power plant:
+  Katwa Cements Pvt Ltd Solar:
     location:
-      - 15.651944
-      - 75.9925
-    area: 0.72
-    power: 40.5
+      - 15.984205
+      - 75.000738
+    power: 3
   Indira Paryavaran Bhawan:
     location:
       - 28.585154
@@ -87,11 +86,10 @@ target_locations:
       - 9.332771
       - 78.388731
     permanent: true
-  Urja Solar Power Plant:
+  Solar power plant Koppal:
     location:
-      - 15.928395
-      - 74.529302
-    power: 0.5
+      - 15.552097
+      - 76.430815
   Ctrls Data Center Mumbai:
     location:
       - 19.063336
