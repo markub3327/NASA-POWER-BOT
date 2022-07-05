@@ -280,31 +280,6 @@ function main()
     CSV.write("dataset/X_all_daily.csv", X_all_daily)
     CSV.write("dataset/y_all_daily.csv", y_all_daily)
     CSV.write("dataset/y_all_hourly.csv", y_all_hourly)
-
-    # Filter
-    X_filtered = filter(:Name => n -> n == "Adani Green Energy Tamilnadu Limited", filter(:DateTime => d -> Dates.month(d) == 11, X_all_daily))
-    Y_filtered = filter(:Name => n -> n == "Indira Paryavaran Bhawan", filter(:DateTime => d -> Dates.month(d) == 11, y_all_daily))
-    # center
-    # Target 1
-
-    # north - south
-    # Indira Paryavaran Bhawan
-    # Adani Green Energy Tamilnadu Limited
-
-    # west - east
-    # Bitta Solar Power Plant
-    # Rewa Ultra Mega Solar
-
-    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "Irradiance")
-    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "Temp")
-    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "TempMin")
-    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "TempMax")
-    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "Humidity")
-    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "WindSpeed", windDir = true)
-    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "WindSpeedMin", windDir = true)
-    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "WindSpeedMax", windDir = true)
-    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "WindDirection", windDir = true)
-    Utils.create_heatmap(X_filtered, Y_filtered, round(Int, parsed_args["width"] * 2), round(Int, parsed_args["height"] * 2), "Pressure")
 end
 
 # check the num. of threads

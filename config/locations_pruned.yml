@@ -1,4 +1,10 @@
 target_locations:
+  Bhadla Solar Park:
+    location:
+      - 27.539669
+      - 71.915253
+    area: 57
+    power: 2245
   Target 1:
     location:
       - 23.25991
@@ -24,10 +30,12 @@ target_locations:
       - 21.313376
       - 78.6013
     power: 54
-  Solar Power Plant Chandasar:
+  Kamuthi Solar Power Project:
     location:
-      - 27.972365
-      - 73.063411
+      - 9.347568
+      - 78.392162
+    area: 10
+    power: 648
   Charanka Solar Park:
     location:
       - 23.9
@@ -50,14 +58,12 @@ target_locations:
       - 24.480278
       - 81.574444
     area: 6.4
-    permanent: true
     power: 750
   Bitta Solar Power Plant:
     location:
       - 23.262778
       - 69.024167
     area: 1.4
-    permanent: true
     power: 40
   Katwa Cements Pvt Ltd Solar:
     location:
@@ -69,7 +75,6 @@ target_locations:
       - 28.585154
       - 77.218347
     area: 0.0046
-    permanent: true
     power: 0.93
   Kurnool Ultra Mega Solar Park:
     location:
@@ -81,11 +86,6 @@ target_locations:
     location:
       - 13.083667
       - 80.268667
-  Adani Green Energy Tamilnadu Limited:
-    location:
-      - 9.332771
-      - 78.388731
-    permanent: true
   Solar power plant Koppal:
     location:
       - 15.552097

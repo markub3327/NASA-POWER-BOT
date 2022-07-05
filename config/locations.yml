@@ -3,12 +3,12 @@
 target_locations: {
     # Original paper
     "Target 1": { 
-        "location": [23.25991, 77.41261], 
-        "permanent": true 
+        "location": [23.25991, 77.41261],
+        "permanent": true
     },
     "Target 2": { 
-        "location": [22.71961, 75.85771], 
-        "permanent": true 
+        "location": [22.71961, 75.85771],
+        "permanent": true
     },
 
     # Solar parks in India
@@ -36,7 +36,6 @@ target_locations: {
         "location": [24.480278, 81.574444],
         "power": 750,    # MW
         "area": 6.4,       # km^2
-        "permanent": true
     },
     "Charanka Solar Park": {
         "location": [23.900000, 71.200000],
@@ -82,7 +81,6 @@ target_locations: {
         "location": [23.262778, 69.024167],
         "power": 40,    # MW
         "area": 1.4,       # km^2
-        "permanent": true
     },
     "Dhirubhai Ambani Solar Park": {
         "location": [26.763056, 72.014167],
@@ -139,7 +137,6 @@ target_locations: {
     },
     "Adani Green Energy Tamilnadu Limited": {
         "location": [9.332771, 78.388731],
-        "permanent": true
     },
     "Solar Power Plant Khera Silajit": {
         "location": [25.835157, 79.652870],
@@ -178,7 +175,6 @@ target_locations: {
         "location": [28.585154, 77.218347],
         "power": 0.93,    # MW
         "area": 0.0046,    # km^2
-        "permanent": true
     },
     "Dell India": {
         "location": [12.978386, 77.665749],

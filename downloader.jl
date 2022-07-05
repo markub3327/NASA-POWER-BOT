@@ -39,8 +39,13 @@ function download_point(year, point, mode, timeout=30)
         j = JSON.parse(String(r.body))
         return j
     catch e
+        # Timeout
+        if (typeof(e) == HTTP.TimeoutRequest.ReadTimeoutError)
+            sleep(5)
+            # println("Retrying download ♻️")
+            return download_point(year, point, mode, timeout)
         # Too Many Requests
-        if (e.status == 429) || (typeof(e) == HTTP.TimeoutRequest.ReadTimeoutError)
+        elseif (e.status == 429)
             sleep(5)
             # println("Retrying download ♻️")
             return download_point(year, point, mode, timeout)
