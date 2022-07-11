@@ -74,7 +74,8 @@ function main()
         Name = String[],
         Latitude = Float32[],
         Longitude = Float32[],
-        Day = Int32[],
+        DaySin = Float32[],
+        DayCos = Float32[]
     ) for _ in 1:nthreads()]
     for i in 1:nthreads()
         for j::Int in 1:parsed_args["width"] * 2 * parsed_args["height"] * 2
@@ -101,7 +102,8 @@ function main()
         Name = String[],
         Latitude = Float32[],
         Longitude = Float32[],
-        Day = Int32[],
+        DaySin = Float32[],
+        DayCos = Float32[],
         Irradiance = Float32[]
     ) for _ in 1:nthreads()]
     df_point_hourly = [ DataFrame(
@@ -109,8 +111,10 @@ function main()
         Name = String[],
         Latitude = Float32[],
         Longitude = Float32[],
-        Day = Int32[],
-        Hour = Int32[],
+        DaySin = Float32[],
+        DayCos = Float32[],
+        HourSin = Float32[],
+        HourCos = Float32[],
         Irradiance = Float32[]
     ) for _ in 1:nthreads()]
 
@@ -196,7 +200,8 @@ function main()
                     location_name,
                     point["location"][1],
                     point["location"][2],
-                    dayofyear(t),
+                    sinpi(dayofyear(t) / 366.0 * 2),
+                    cospi(dayofyear(t) / 366.0 * 2),
                     value...
                 ])
             end
@@ -214,7 +219,8 @@ function main()
                     location_name,
                     point["location"][1],
                     point["location"][2],
-                    dayofyear(t),
+                    sinpi(dayofyear(t) / 366.0 * 2),
+                    cospi(dayofyear(t) / 366.0 * 2),
                     value
                 ])
             end
@@ -233,8 +239,10 @@ function main()
                         location_name,
                         point["location"][1],
                         point["location"][2],
-                        dayofyear(t),
-                        hour(t),
+                        sinpi(dayofyear(t) / 366.0 * 2),
+                        cospi(dayofyear(t) / 366.0 * 2),
+                        sinpi(hour(t) / 24.0 * 2),
+                        cospi(hour(t) / 24.0 * 2),
                         value
                     ])
                 end
