@@ -6,22 +6,12 @@
 
   It use [NASA POWER API](https://power.larc.nasa.gov/docs/services/api/) to get data.
 
-# Autmoatic Setup
-To initialize, either run the setup.py file using the following command:
+# Setup
+To initialize, run the setup.jl file using the following command:
 
   ```bash
-    python setup.py 
+    julia setup.jl 
   ```
-
-# Manual Setup
-To manually do it:
-1. Run the following command to install the required packages:
-
-  ```
-  julia install_packages.jl
-  ```
-
-2. Make a directory called dataset in the root directory of the project.
 
 # Example Usage
 

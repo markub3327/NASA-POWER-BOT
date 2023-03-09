@@ -4,16 +4,6 @@ target_locations:
       - 23.25991
       - 77.41261
     permanent: true
-  Pavagada Solar Park:
-    location:
-      - 14.251944
-      - 77.4475
-    area: 53
-    power: 2050
-  Solar Power Plant Khera Silajit:
-    location:
-      - 25.835157
-      - 79.65287
   Target 2:
     location:
       - 22.71961
@@ -29,22 +19,30 @@ target_locations:
       - 71.2
     area: 20
     power: 615
-  BOSCH Solar Power Plant:
+  Rewa Ultra Mega Solar:
     location:
-      - 15.981156
-      - 74.998076
-    area: 0.364
-    power: 115
+      - 24.480278
+      - 81.574444
+    area: 6.4
+    power: 750
   Indira Paryavaran Bhawan:
     location:
       - 28.585154
       - 77.218347
     area: 0.0046
     power: 0.93
+  Chennai Metropolitan Area:
+    location:
+      - 13.083667
+      - 80.268667
   Adani Green Energy Tamilnadu Limited:
     location:
       - 9.332771
       - 78.388731
+  Solar power plant Koppal:
+    location:
+      - 15.552097
+      - 76.430815
   Ctrls Data Center Mumbai:
     location:
       - 19.063336
