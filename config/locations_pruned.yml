@@ -4,11 +4,26 @@ target_locations:
       - 23.25991
       - 77.41261
     permanent: true
+  Pavagada Solar Park:
+    location:
+      - 14.251944
+      - 77.4475
+    area: 53
+    power: 2050
+  Solar Power Plant Khera Silajit:
+    location:
+      - 25.835157
+      - 79.65287
   Target 2:
     location:
       - 22.71961
       - 75.85771
     permanent: true
+  54 MW PV SOLAR POWER PLANT:
+    location:
+      - 21.313376
+      - 78.6013
+    power: 54
   Solar Power Plant Chandasar:
     location:
       - 27.972365
@@ -19,18 +34,41 @@ target_locations:
       - 71.2
     area: 20
     power: 615
+  5MW Solar Power Plant Varroc:
+    location:
+      - 21.059537
+      - 74.375055
+    power: 5
+  Welspun Solar MP project:
+    location:
+      - 24.6907
+      - 75.1347
+    area: 3
+    power: 151
   Rewa Ultra Mega Solar:
     location:
       - 24.480278
       - 81.574444
     area: 6.4
     power: 750
+  Bitta Solar Power Plant:
+    location:
+      - 23.262778
+      - 69.024167
+    area: 1.4
+    power: 40
   Indira Paryavaran Bhawan:
     location:
       - 28.585154
       - 77.218347
     area: 0.0046
     power: 0.93
+  Kurnool Ultra Mega Solar Park:
+    location:
+      - 15.681522
+      - 78.283749
+    area: 24
+    power: 1000
   Chennai Metropolitan Area:
     location:
       - 13.083667
@@ -43,6 +81,10 @@ target_locations:
     location:
       - 15.552097
       - 76.430815
+  Arete Elena Energy Pvt Ltd:
+    location:
+      - 15.86184
+      - 74.909739
   Ctrls Data Center Mumbai:
     location:
       - 19.063336
