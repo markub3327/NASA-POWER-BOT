@@ -128,28 +128,33 @@ function main()
     end
     println("\u001b[33;1m----------------------------------------------------------\u001b[0m\n")
 
+    feature_set_1 = "ALLSKY_SFC_SW_DWN,T2M,T2M_MIN,T2M_MAX,RH2M"
+    feature_set_2 =  "WS10M,WS10M_MIN,WS10M_MAX,WD10M,PS"
+
     # Downloading data
     @threads :dynamic for year in parsed_args["start"]:parsed_args["end"]
         # Region - daily
         for (location_name, point) in locations["target_locations"]
-            data_regional = NASAPowerDownloader.download_regional(year, Utils.get_area(point["location"], parsed_args["width"], parsed_args["height"]), "daily", parsed_args["timeout"])
-            long_name = data_regional["parameters"]["ALLSKY_SFC_SW_DWN"]["longname"]
-            units = data_regional["parameters"]["ALLSKY_SFC_SW_DWN"]["units"]
-            fill_value_regional = data_regional["header"]["fill_value"]
+            data_regional1 = NASAPowerDownloader.download_regional(year, Utils.get_area(point["location"], parsed_args["width"], parsed_args["height"]), "daily", parsed_args["timeout"], feature_set_1)
+            data_regional2 = NASAPowerDownloader.download_regional(year, Utils.get_area(point["location"], parsed_args["width"], parsed_args["height"]), "daily", parsed_args["timeout"], feature_set_2)
+            long_name = data_regional1["parameters"]["ALLSKY_SFC_SW_DWN"]["longname"]
+            units = data_regional1["parameters"]["ALLSKY_SFC_SW_DWN"]["units"]
+            fill_value_regional = data_regional1["header"]["fill_value"]
 
             X = Dict{String, Array{Float32}}()     # temporary
-            features = data_regional["features"]
-            for f in keys(features)
-                irradiance = features[f]["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
-                temp = features[f]["properties"]["parameter"]["T2M"]
-                temp_min = features[f]["properties"]["parameter"]["T2M_MIN"]
-                temp_max = features[f]["properties"]["parameter"]["T2M_MAX"]
-                humidity = features[f]["properties"]["parameter"]["RH2M"]
-                wind_speed = features[f]["properties"]["parameter"]["WS10M"]
-                wind_speed_min = features[f]["properties"]["parameter"]["WS10M_MIN"]
-                wind_speed_max = features[f]["properties"]["parameter"]["WS10M_MAX"]
-                wind_direction = features[f]["properties"]["parameter"]["WD10M"]
-                pressure = features[f]["properties"]["parameter"]["PS"]
+            features1 = data_regional1["features"]
+            features2 = data_regional2["features"]
+            for (f1,f2) in zip(keys(features1), keys(features2))
+                irradiance = features1[f1]["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]
+                temp = features1[f1]["properties"]["parameter"]["T2M"]
+                temp_min = features1[f1]["properties"]["parameter"]["T2M_MIN"]
+                temp_max = features1[f1]["properties"]["parameter"]["T2M_MAX"]
+                humidity = features1[f1]["properties"]["parameter"]["RH2M"]
+                wind_speed = features2[f2]["properties"]["parameter"]["WS10M"]
+                wind_speed_min = features2[f2]["properties"]["parameter"]["WS10M_MIN"]
+                wind_speed_max = features2[f2]["properties"]["parameter"]["WS10M_MAX"]
+                wind_direction = features2[f2]["properties"]["parameter"]["WD10M"]
+                pressure = features2[f2]["properties"]["parameter"]["PS"]
                 for (i, t, t_min, t_max, h, ws, ws_min, ws_max, wd, p) in zip(irradiance, temp, temp_min, temp_max, humidity, wind_speed, wind_speed_min, wind_speed_max, wind_direction, pressure)
                     time = i[1]
                     if haskey(X, time)
